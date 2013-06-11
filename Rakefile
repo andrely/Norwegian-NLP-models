@@ -3,6 +3,7 @@ require 'logger'
 require_relative 'scripts/conll_reader'
 require_relative 'scripts/tree_tagger_writer'
 require_relative 'scripts/tree_tagger_trainer'
+require_relative 'scripts/utilities'
 
 logger = Logger.new STDOUT
 
@@ -14,7 +15,12 @@ task :generate_tt_input => [nn_corpus_fn] do
     reader = ConllReader.new file
 
     writer = TreeTaggerWriter.new reader
-    writer.create_files nn_tt_fn
+
+    Utilities.multiple_file_open([nn_tt_fn + '.in', nn_tt_fn + '.lex', nn_tt_fn + '.open'], 'w') do |files|
+      in_file, lex_file, open_class_file = files
+      writer.create_files in_file, lex_file, open_class_file
+    end
+
   end
 end
 
