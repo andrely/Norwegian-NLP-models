@@ -9,16 +9,21 @@ class ConllReader
   end
 
   def each
-    while not @file.eof?
+    until @file.eof?
       yield next_sentence
     end
   end
 
   def next_sentence
     words = []
-    line = @file.readline
 
-    while line.chomp != ""
+    begin
+      line = @file.readline
+    rescue EOFError
+      return words
+    end
+
+    while line.chomp != ''
       cols = line.chomp.split("\t")
 
       if cols.count != @columns.count
@@ -33,7 +38,11 @@ class ConllReader
 
       words << word
 
-      line = @file.readline
+      begin
+        line = @file.readline
+      rescue EOFError
+        return words
+      end
     end
 
     words
@@ -41,5 +50,21 @@ class ConllReader
 
   def reset
     @file.rewind
+  end
+
+  def size
+    size_file = @file.clone
+    stored_pos = @file.pos
+    size_file.pos = 0
+
+    size_reader = ConllReader.new size_file
+
+    count = 0
+
+    size_reader.each { |sent| count += 1 }
+
+    @file.pos = stored_pos
+
+    return count
   end
 end

@@ -32,12 +32,6 @@ END
 
   @@sample_sent_sizes = [12, 4]
 
-  # Called before every test method runs. Can be used
-  # to set up fixture information.
-  def setup
-    @infile = StringIO.new(@@sample_input)
-  end
-
   # Called after every test method runs. Can be used to tear
   # down fixture information.
 
@@ -45,11 +39,29 @@ END
     # Do nothing
   end
 
+  def get_in_file
+    return StringIO.new(@@sample_input)
+  end
+
   def test_read_conll
-    reader = ConllReader.new @infile
+    reader = ConllReader.new get_in_file
 
     reader.each_with_index do |sent, i|
       assert_equal(@@sample_sent_sizes[i], sent.count)
     end
+  end
+
+  def test_size
+    reader = ConllReader.new get_in_file
+
+    sent = reader.next_sentence
+    assert_not_nil sent
+    assert_equal 12, sent.length
+
+    assert_equal 2, reader.size
+
+    sent = reader.next_sentence
+    assert_not_nil sent
+    assert_equal 4, sent.length
   end
 end
