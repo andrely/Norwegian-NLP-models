@@ -4,7 +4,7 @@ class TreeTaggerWriter
 
   include Logging
 
-  @@no_closed_class_pos = ['subst', 'verb', 'ufl', 'adj', 'adv', 'fork', 'interj', 'symb', 'ukjent']
+  @@nn_closed_class_pos = %w(subst verb ufl adj adv fork interj symb ukjent)
 
   def initialize(reader)
     @reader = reader
@@ -42,13 +42,13 @@ class TreeTaggerWriter
         elsif not lookup.has_key? pos
           lookup[pos] = [lemma]
         elsif lookup.has_key? pos
-          if not lookup[pos].detect { |l| l == lemma}
+          unless lookup[pos].detect { |l| l == lemma}
             lookup[pos] << lemma
             Logging.logger.info "Combining lemma #{lookup[pos].join('_')} for form #{form}, pos #{pos}"
           end
         end
 
-        if @@no_closed_class_pos.find word[:pos] and not open_classes.find pos
+        if @@nn_closed_class_pos.find { |p| p == word[:pos] } and not open_classes.find { |p| p == pos}
           open_classes << pos
         end
       end
@@ -64,7 +64,7 @@ class TreeTaggerWriter
       lex_file.write "\n"
     end
 
-    open_class_file.write open_classes.join(" ")
+    open_class_file.write open_classes.join(' ')
     open_class_file.write "\n"
   end
 end
