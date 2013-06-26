@@ -47,21 +47,24 @@ END
     reader = ConllReader.new get_in_file
 
     reader.each_with_index do |sent, i|
-      assert_equal(@@sample_sent_sizes[i], sent.count)
+      assert_equal(@@sample_sent_sizes[i], sent[:words].count)
+      assert_equal(i, sent[:index])
     end
   end
 
   def test_size
     reader = ConllReader.new get_in_file
 
-    sent = reader.next_sentence
+    sent = reader.shift
     assert_not_nil sent
-    assert_equal 12, sent.length
+    assert_equal 12, sent[:words].length
+    assert_equal 0, sent[:index]
 
     assert_equal 2, reader.size
 
-    sent = reader.next_sentence
+    sent = reader.shift
     assert_not_nil sent
-    assert_equal 4, sent.length
+    assert_equal 4, sent[:words].length
+    assert_equal 1, sent[:index]
   end
 end

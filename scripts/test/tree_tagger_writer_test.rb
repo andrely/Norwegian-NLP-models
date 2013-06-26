@@ -5,9 +5,10 @@ require 'stringio'
 require_relative '../tree_tagger_writer'
 
 class TreeTaggerWriterTest < Test::Unit::TestCase
-  @@sample = [[{:form => 'ba', :pos => 'subst', :feat => 'ent', :lemma => 'foo'},
-               {:form => 'gneh', :pos => 'verb', :feat => 'pres', :lemma => 'knark'},
-               {:form => '.', :pos => 'clb', :feat => '_', :lemma => '$.'}]]
+  @@sample = [{index: 0,
+               words: [{:form => 'ba', :pos => 'subst', :feat => 'ent', :lemma => 'foo'},
+                       {:form => 'gneh', :pos => 'verb', :feat => 'pres', :lemma => 'knark'},
+                       {:form => '.', :pos => 'clb', :feat => '_', :lemma => '$.'}]}]
 
   # Called before every test method runs. Can be used
   # to set up fixture information.

@@ -15,9 +15,10 @@ class TreeTaggerWriter
     open_classes = []
 
     @reader.each do |sent|
-      len = sent.count
+      words = sent[:words]
+      len = words.count
 
-      sent.each_with_index do |word, i|
+      words.each_with_index do |word, i|
         form = word[:form]
         pos = word[:pos]
 
