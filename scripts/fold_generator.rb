@@ -1,34 +1,30 @@
 class FoldGenerator
+  include Enumerable
+
   def initialize(reader, n_folds = 5)
     @reader = reader
     @n_folds = n_folds
-    @sentence_count = get_sentence_count @reader
-    @folds = nil
   end
 
-  def get_sentence_count(reader)
-    return reader.size
-  end
-
-  def get_folds &block
-    populate_folds unless @folds
-
-    return @folds
-  end
-
-  def populate_folds
-    @folds = @n_folds.times.collect { [] }
-
-    @reader.each_with_index do |sent, sent_idx|
-      excepted_fold = sent_idx % @n_folds
-
-      @folds.each_with_index do |fold, fold_idx|
-        unless fold_idx == excepted_fold
-          fold << sent
-        end
+  def each
+    @reader.each do |sent|
+      if sent.has_key? :fold
+        raise ArgumentError
       end
-    end
 
-    return @folds
+      index = sent[:index]
+      fold = index % @n_folds
+      sent[:fold] = fold
+
+      yield sent
+    end
+  end
+
+  def has_folds?
+    return true
+  end
+
+  def num_folds
+    return @n_folds
   end
 end

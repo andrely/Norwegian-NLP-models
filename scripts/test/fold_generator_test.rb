@@ -7,9 +7,10 @@ class FoldGeneratorTest < Test::Unit::TestCase
   # Called before every test method runs. Can be used
   # to set up fixture information.
   def setup
-    @sample = [[{:form => 1}],
-               [{:form => 2}],
-               [{:form => 3}]]
+    @sample = [{index: 0, words: []},
+               {index: 1, words: []},
+               {index: 2, words: []},
+               {index: 3, words: []}]
     @sample_n_folds = 3
   end
 
@@ -21,13 +22,20 @@ class FoldGeneratorTest < Test::Unit::TestCase
   end
 
   def test_fold_generator
-    gen = FoldGenerator.new @sample, @sample_n_folds
+    gen = FoldGenerator.new(@sample, @sample_n_folds)
+    assert_not_nil gen
 
-    gen.get_folds.each_with_index do |fold, fold_idx|
-      assert_equal 2, fold.size
+    gen = gen.to_a
+    assert_not_nil gen
+    assert_equal 4, gen.size
 
-      fold_sample = @sample.select.with_index { |_, i| i % @sample_n_folds != fold_idx }
-      assert_equal fold_sample, fold
-    end
+    assert_equal 0, gen[0][:index]
+    assert_equal 0, gen[0][:fold]
+    assert_equal 1, gen[1][:index]
+    assert_equal 1, gen[1][:fold]
+    assert_equal 2, gen[2][:index]
+    assert_equal 2, gen[2][:fold]
+    assert_equal 3, gen[3][:index]
+    assert_equal 0, gen[3][:fold]
   end
 end

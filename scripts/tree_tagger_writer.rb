@@ -1,3 +1,5 @@
+require 'stringio'
+
 require_relative 'logger_mixin'
 
 class TreeTaggerWriter
@@ -10,12 +12,18 @@ class TreeTaggerWriter
     @reader = reader
   end
 
-  def create_files(in_file, lex_file, open_class_file)
-    lexicon = {}
-    open_classes = []
+  def create_files(opts = {})
+    base_name = opts[:base_name] || nil
+    descr = opts[:descr] || create_descr(base_name)
+
+    # Initialize lexicon and open class file lists for each fold
+    # TODO hacky, must be a better way to create array of arrays/hashes
+    lexicon = (1..@reader.num_folds).collect { |i| Hash.new }
+    open_classes = (1..@reader.num_folds).collect { |i| Array.new }
 
     @reader.each do |sent|
       words = sent[:words]
+      fold = get_fold sent
       len = words.count
 
       words.each_with_index do |word, i|
@@ -30,42 +38,138 @@ class TreeTaggerWriter
           pos = 'SENT'
         end
 
-        in_file.write "#{form}\t#{pos}\n"
-
-        lex_form = form.downcase
-
-        lemma = word[:lemma].downcase
-
-        lookup = lexicon[lex_form]
-
-        if not lookup
-          lexicon[lex_form] = { pos => [lemma] }
-        elsif not lookup.has_key? pos
-          lookup[pos] = [lemma]
-        elsif lookup.has_key? pos
-          unless lookup[pos].detect { |l| l == lemma}
-            lookup[pos] << lemma
-            Logging.logger.info "Combining lemma #{lookup[pos].join('_')} for form #{form}, pos #{pos}"
+        if fold
+          descr.each_with_index do |fold_descr, i|
+            if i == fold
+              write_test_file fold_descr[:pred_file], form
+              write_word fold_descr[:true_file], form, pos
+            else
+              write_word fold_descr[:in_file], form, pos
+              add_to_lexicon(lexicon[i], word, form, pos)
+              add_to_open_classes(open_classes[i], fold, word, pos)
+            end
           end
-        end
-
-        if @@nn_closed_class_pos.find { |p| p == word[:pos] } and not open_classes.find { |p| p == pos}
-          open_classes << pos
+        else
+          write_word descr[0][:in_file], form, pos
+          add_to_lexicon(lexicon[0], word, form, pos)
+          add_to_open_classes(open_classes[0], fold, word, pos)
         end
       end
     end
 
-    lexicon.each_pair do |k, v|
-      lex_file.write k
+    create_lexicon_file(descr, lexicon)
 
-      v.each_pair do |pos, lemmas|
-        lex_file.write "\t#{pos} #{lemmas.join('_')}"
+    create_open_class_file(descr, open_classes)
+
+    close_descr descr
+
+    descr = descr[0] unless @reader.has_folds?
+
+    return descr
+  end
+
+  def create_open_class_file(descr, open_classes)
+    descr.zip open_classes do |fold_descr, fold_open_classes|
+      fold_descr[:open_class_file].write fold_open_classes.join(' ')
+      fold_descr[:open_class_file].write "\n"
+    end
+  end
+
+  def create_lexicon_file(descr, lexicon)
+    descr.zip lexicon do |fold_descr, fold_lexicon|
+      fold_lexicon.each_pair do |k, v|
+        fold_descr[:lex_file].write k
+
+        v.each_pair do |pos, lemmas|
+          fold_descr[:lex_file].write "\t#{pos} #{lemmas.join('_')}"
+        end
+
+        fold_descr[:lex_file].write "\n"
+      end
+    end
+  end
+
+  def add_to_open_classes(open_classes, fold, word, pos)
+    if @@nn_closed_class_pos.find { |p| p == word[:pos] } and not open_classes.find { |p| p == pos }
+      open_classes << pos
+    end
+  end
+
+  def add_to_lexicon(lexicon, word, form, pos)
+    lex_form = word[:form].downcase
+
+    lemma = word[:lemma].downcase
+
+    lookup = lexicon[lex_form]
+
+    if not lookup
+      lexicon[lex_form] = {pos => [lemma]}
+    elsif not lookup.has_key? pos
+      lookup[pos] = [lemma]
+    elsif lookup.has_key? pos
+      unless lookup[pos].detect { |l| l == lemma }
+        lookup[pos] << lemma
+        Logging.logger.info "Combining lemma #{lookup[pos].join('_')} for form #{form}, pos #{pos}"
+      end
+    end
+  end
+
+  def write_word(file, form, pos)
+    file.write "#{form}\t#{pos}\n"
+  end
+
+  def write_test_file(file, form)
+    file.write "#{form}\n"
+  end
+
+  def get_fold(sent)
+    if @reader.has_folds?
+      return sent[:fold]
+    else
+      return nil
+    end
+  end
+
+  # TODO Hacky, rewrite this
+  def create_descr(base_name=nil)
+    if base_name
+      if @reader.has_folds?
+        (0...@reader.num_folds).collect do |i|
+          { in_file: File.new("#{base_name}_#{i}_in", 'w'),
+            pred_file: File.new("#{base_name}_#{i}_pred", 'w'),
+            true_file: File.new("#{base_name}_#{i}_true", 'w'),
+            lex_file: File.new("#{base_name}_#{i}_lex", 'w'),
+            open_class_file: File.new("#{base_name}_#{i}_open", 'w') }
+        end
+      else
+        { in_file: File.new("#{base_name}_in", 'w'),
+          lex_file: File.new("#{base_name}_lex", 'w'),
+          open_class_file: File.new("#{base_name}_open", 'w') }
+      end
+    else
+      # wraps single descr in array
+      if @reader.has_folds?
+        (0...@reader.num_folds).collect do |i|
+          { in_file: StringIO.new,
+            pred_file: StringIO.new,
+            true_file: StringIO.new,
+            lex_file: StringIO.new,
+            open_class_file: StringIO.new }
+        end
+      else
+        [{ in_file: StringIO.new,
+           lex_file: StringIO.new,
+           open_class_file: StringIO.new }]
       end
 
-      lex_file.write "\n"
+    end
+  end
+
+  def close_descr(descr)
+    descr.each do |fold_descr|
+      fold_descr.each_value { |file| file.close unless file.closed? }
     end
 
-    open_class_file.write open_classes.join(' ')
-    open_class_file.write "\n"
+    return descr
   end
 end

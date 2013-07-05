@@ -1,8 +1,7 @@
 require_relative 'utilities'
+require_relative 'base_reader'
 
-class ConllReader
-  include Enumerable
-
+class ConllReader < BaseReader
   attr_reader :count
 
   @@default_columns = [:id, :form, :lemma, :pos, :ppos, :feat, :head, :deprel, :u1, :u2]
