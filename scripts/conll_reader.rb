@@ -1,20 +1,28 @@
 require_relative 'utilities'
 require_relative 'base_reader'
+require_relative 'null_writer'
 
 class ConllReader < BaseReader
   attr_reader :count
 
   @@default_columns = [:id, :form, :lemma, :pos, :ppos, :feat, :head, :deprel, :u1, :u2]
 
-  def initialize(file, opts = {})
+  def initialize(file, processor, opts = {})
     @columns = opts[:columns] || @@default_columns
     @file = file
     @count = 0
+    @processor = processor
+  end
+
+  def process
+    sentence = shift
+
+    return @processor.process sentence
   end
 
   def each
     until @file.eof?
-      yield shift
+      yield process
     end
   end
 
@@ -72,7 +80,8 @@ class ConllReader < BaseReader
     stored_pos = @file.pos
     size_file.pos = 0
 
-    size_reader = ConllReader.new size_file
+    size_writer = NullWriter.new
+    size_reader = ConllReader.new size_file, size_writer
     size_reader.to_a
 
     @file.pos = stored_pos
