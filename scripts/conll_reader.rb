@@ -15,9 +15,13 @@ class ConllReader < BaseReader
   end
 
   def process
-    sentence = shift
+    unless @file.eof?
+      sentence = shift
 
-    return @processor.process sentence
+      return @processor.process sentence
+    else
+      return nil
+    end
   end
 
   def each
