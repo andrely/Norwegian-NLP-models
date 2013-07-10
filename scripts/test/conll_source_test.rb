@@ -7,10 +7,10 @@ MiniTest::Reporters.use!
 
 require 'stringio'
 
-require_relative '../conll_reader'
-require_relative '../null_writer'
+require_relative '../conll_source'
+require_relative '../null_processor'
 
-class ConllReaderTest < Test::Unit::TestCase
+class ConllSourceTest < Test::Unit::TestCase
   @@sample_input = <<END
 1	Nokre	nokon	det	det	kvant|fl	2	DET	_	_
 2	refleksjonar	refleksjon	subst	subst	mask|appell|ub|fl	0	FRAG	_	_
@@ -45,18 +45,18 @@ END
   end
 
   def test_read_conll
-    writer = NullWriter.new
+    writer = NullProcessor.new
 
-    reader = ConllReader.new get_in_file, writer
+    reader = ConllSource.new get_in_file, writer
 
     reader.each_with_index do |sent, i|
       assert_equal(@@sample_sent_sizes[i], sent[:words].count)
       assert_equal(i, sent[:index])
     end
 
-    writer = NullWriter.new
+    writer = NullProcessor.new
 
-    reader = ConllReader.new get_in_file, writer
+    reader = ConllSource.new get_in_file, writer
 
     sents = reader.to_a
 
@@ -70,8 +70,8 @@ END
   end
 
   def test_size
-    writer = NullWriter.new
-    reader = ConllReader.new get_in_file, writer
+    writer = NullProcessor.new
+    reader = ConllSource.new get_in_file, writer
 
     sent = reader.process
     assert_not_nil sent

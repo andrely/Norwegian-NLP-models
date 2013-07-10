@@ -2,11 +2,11 @@ require 'test/unit'
 
 require 'stringio'
 
-require_relative '../tree_tagger_writer'
-require_relative '../array_reader'
-require_relative '../fold_generator'
+require_relative '../tree_tagger_processor'
+require_relative '../array_source'
+require_relative '../fold_processor'
 
-class TreeTaggerWriterTest < Test::Unit::TestCase
+class TreeTaggerProcessorTest < Test::Unit::TestCase
   @@sample = [{index: 0,
                words: [{:form => 'ba', :pos => 'subst', :feat => 'ent', :lemma => 'foo'},
                        {:form => 'gneh', :pos => 'verb', :feat => 'pres', :lemma => 'knark'},
@@ -33,8 +33,10 @@ class TreeTaggerWriterTest < Test::Unit::TestCase
   end
 
   def test_create_files
-    writer = TreeTaggerWriter.new(ArrayReader.new(@@sample))
-    descr = writer.create_files
+    writer = TreeTaggerProcessor.new
+    reader = ArraySource.new @@sample, writer
+    reader.process_all
+    descr = writer.descr
 
     assert_equal "ba\tsubst_ent\ngneh\tverb_pres\n.\tSENT\n", descr[:in_file].string
 
@@ -44,10 +46,21 @@ class TreeTaggerWriterTest < Test::Unit::TestCase
   end
 
   def test_create_files_with_folds
-    reader = ArrayReader.new(@@sample2)
-    fold_gen = FoldGenerator.new(reader, 2)
-    writer = TreeTaggerWriter.new(fold_gen)
-    descr = writer.create_files
+    writer = TreeTaggerProcessor.new
+    fold_gen = FoldProcessor.new(writer, num_folds = 2)
+
+    assert_equal 2, writer.num_folds
+    writer.create_descr
+    assert_kind_of Enumerable, writer.descr
+    assert_equal 2, writer.descr.size
+    assert_equal 2, writer.descr.size
+
+    reader = ArraySource.new(@@sample2, fold_gen)
+    reader.process_all
+
+    assert_raise(RuntimeError) { fold_gen.num_folds = 3 }
+
+    descr = writer.descr
 
     assert_equal "ba\tsubst_ent\n.\tSENT\n", descr[1][:in_file].string
     assert_equal "gneh\tverb_pres\n.\tSENT\n", descr[0][:in_file].string

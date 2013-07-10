@@ -1,8 +1,8 @@
 require_relative 'utilities'
 require_relative 'base_reader'
-require_relative 'null_writer'
+require_relative 'null_processor'
 
-class ConllReader < BaseReader
+class ConllSource < BaseReader
   attr_reader :count
 
   @@default_columns = [:id, :form, :lemma, :pos, :ppos, :feat, :head, :deprel, :u1, :u2]
@@ -84,8 +84,8 @@ class ConllReader < BaseReader
     stored_pos = @file.pos
     size_file.pos = 0
 
-    size_writer = NullWriter.new
-    size_reader = ConllReader.new size_file, size_writer
+    size_writer = NullProcessor.new
+    size_reader = ConllSource.new size_file, size_writer
     size_reader.to_a
 
     @file.pos = stored_pos
