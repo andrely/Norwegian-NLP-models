@@ -1,8 +1,8 @@
 require_relative 'utilities'
-require_relative 'base_reader'
+require_relative 'base_source'
 require_relative 'null_processor'
 
-class ConllSource < BaseReader
+class ConllSource < BaseSource
   attr_reader :count
 
   @@default_columns = [:id, :form, :lemma, :pos, :ppos, :feat, :head, :deprel, :u1, :u2]
@@ -11,23 +11,18 @@ class ConllSource < BaseReader
     @columns = opts[:columns] || @@default_columns
     @file = file
     @count = 0
-    @processor = processor
-  end
 
-  def process
-    unless @file.eof?
-      sentence = shift
-
-      return @processor.process sentence
-    else
-      return nil
-    end
+    super(processor)
   end
 
   def each
     until @file.eof?
       yield process
     end
+  end
+
+  def last_sentence_processed?
+    return @file.eof?
   end
 
   def shift
