@@ -47,7 +47,7 @@ class TreeTaggerProcessorTest < Test::Unit::TestCase
 
   def test_create_files_with_folds
     writer = TreeTaggerProcessor.new
-    fold_gen = FoldProcessor.new(writer, num_folds = 2)
+    fold_gen = FoldProcessor.new(processor: writer, num_folds: 2)
 
     assert_equal 2, writer.num_folds
     writer.create_descr

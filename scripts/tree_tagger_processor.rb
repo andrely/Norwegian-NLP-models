@@ -1,8 +1,9 @@
 require 'stringio'
 
 require_relative 'logger_mixin'
+require_relative 'base_processor'
 
-class TreeTaggerProcessor
+class TreeTaggerProcessor < BaseProcessor
   attr_reader :descr, :num_folds
 
   include Logging
@@ -10,6 +11,8 @@ class TreeTaggerProcessor
   @@nn_closed_class_pos = %w(subst verb ufl adj adv fork interj symb ukjent)
 
   def initialize(opts={})
+    super()
+
     @base_name = opts[:base_name] || nil
     @descr = opts[:descr] || nil
     @num_folds = opts[:num_folds] || 1
@@ -20,22 +23,6 @@ class TreeTaggerProcessor
 
     @lexicon = nil
     @open_classes = nil
-  end
-
-  def create_files(opts = {})
-    @processor.each do |sent|
-      process(sent)
-    end
-
-    create_lexicon_file(descr, @lexicon)
-
-    create_open_class_file(descr, @open_classes)
-
-    close_descr descr
-
-    descr = descr[0] unless @processor.has_folds?
-
-    return descr
   end
 
   def process(sent)
@@ -84,6 +71,8 @@ class TreeTaggerProcessor
         add_to_open_classes(@open_classes[0], fold, word, pos)
       end
     end
+
+    return sent
   end
 
   def post_process

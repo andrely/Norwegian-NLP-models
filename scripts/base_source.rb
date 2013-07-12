@@ -14,13 +14,13 @@ class BaseSource
       sent = shift
 
       if @processor
-        sent = @processor.process sent
+        sent = @processor.process_internal sent
       end
 
       return sent
     else
       if @processor
-        @processor.post_process
+        @processor.post_process_internal
       end
 
       return nil

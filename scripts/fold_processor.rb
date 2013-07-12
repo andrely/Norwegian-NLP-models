@@ -1,11 +1,13 @@
-class FoldProcessor
+require_relative 'base_processor'
+
+class FoldProcessor < BaseProcessor
   attr_reader :num_folds
 
-  def initialize(processor, num_folds = 5)
-    @processor = processor
+  def initialize(opts = {})
+    super(opts[:processor] || nil)
 
     # TODO no way to call num_folds= here ?
-    @num_folds = num_folds
+    @num_folds = opts[:num_folds] || 5
 
     if @processor
       @processor.num_folds = @num_folds
@@ -21,31 +23,7 @@ class FoldProcessor
     fold = index % @num_folds
     sent[:fold] = fold
 
-    if @processor
-      @processor.process sent
-    end
-
     return sent
-  end
-
-  def post_process
-    if @processor
-      @processor.post_process
-    end
-  end
-
-  def each
-    @processor.each do |sent|
-      if sent.has_key? :fold
-        raise ArgumentError
-      end
-
-      index = sent[:index]
-      fold = index % @num_folds
-      sent[:fold] = fold
-
-      yield sent
-    end
   end
 
   def has_folds?

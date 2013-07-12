@@ -2,7 +2,6 @@ require 'test/unit'
 
 require_relative '../fold_processor'
 require_relative '../array_source'
-require_relative '../null_processor'
 
 class FoldProcessorTest < Test::Unit::TestCase
 
@@ -24,8 +23,7 @@ class FoldProcessorTest < Test::Unit::TestCase
   end
 
   def test_fold_generator
-    writer = NullProcessor.new
-    gen = FoldProcessor.new(writer, @sample_n_folds)
+    gen = FoldProcessor.new(num_folds: @sample_n_folds)
     reader = ArraySource.new @sample, gen
     assert_not_nil gen
 
