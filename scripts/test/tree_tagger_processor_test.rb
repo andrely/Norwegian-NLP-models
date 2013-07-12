@@ -5,20 +5,9 @@ require 'stringio'
 require_relative '../tree_tagger_processor'
 require_relative '../array_source'
 require_relative '../fold_processor'
+require_relative 'data_repository'
 
 class TreeTaggerProcessorTest < Test::Unit::TestCase
-  @@sample = [{index: 0,
-               words: [{:form => 'ba', :pos => 'subst', :feat => 'ent', :lemma => 'foo'},
-                       {:form => 'gneh', :pos => 'verb', :feat => 'pres', :lemma => 'knark'},
-                       {:form => '.', :pos => 'clb', :feat => '_', :lemma => '$.'}]}]
-
-  @@sample2 = [{index: 0,
-                words: [{:form => 'ba', :pos => 'subst', :feat => 'ent', :lemma => 'foo'},
-                       {:form => '.', :pos => 'clb', :feat => '_', :lemma => '$.'}]},
-               {index: 1,
-                words: [{:form => 'gneh', :pos => 'verb', :feat => 'pres', :lemma => 'knark'},
-                        {:form => '.', :pos => 'clb', :feat => '_', :lemma => '$.'}]}]
-
   # Called before every test method runs. Can be used
   # to set up fixture information.
   def setup
@@ -34,7 +23,7 @@ class TreeTaggerProcessorTest < Test::Unit::TestCase
 
   def test_create_files
     writer = TreeTaggerProcessor.new
-    reader = ArraySource.new @@sample, writer
+    reader = ArraySource.new DataRepository.sample1, writer
     reader.process_all
     descr = writer.descr
 
@@ -55,7 +44,7 @@ class TreeTaggerProcessorTest < Test::Unit::TestCase
     assert_equal 2, writer.descr.size
     assert_equal 2, writer.descr.size
 
-    reader = ArraySource.new(@@sample2, fold_gen)
+    reader = ArraySource.new(DataRepository.sample2, fold_gen)
     reader.process_all
 
     assert_raise(RuntimeError) { fold_gen.num_folds = 3 }
