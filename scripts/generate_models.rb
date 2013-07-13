@@ -21,7 +21,7 @@ def create_treetagger_files(base_fn)
 end
 
 def create_treetagger_model descr
-  model_fn = (descr[:in_file].path)[0..-3] + 'par'
+  model_fn = (descr[:in_file].path)[0..-4] + '.par'
 
   model = TreeTaggerModel.new model_fn
   model.train descr[:in_file].path, descr[:lex_file].path, descr[:open_class_file].path
