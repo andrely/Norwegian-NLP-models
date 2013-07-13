@@ -126,7 +126,7 @@ class TreeTaggerProcessor < BaseProcessor
     elsif lookup.has_key? pos
       unless lookup[pos].detect { |l| l == lemma }
         lookup[pos] << lemma
-        Logging.logger.info "Combining lemma #{lookup[pos].join('_')} for form #{form}, pos #{pos}"
+        logger.info "Combining lemma #{lookup[pos].join('_')} for form #{form}, pos #{pos}"
       end
     end
   end
