@@ -1,17 +1,10 @@
 require 'test/unit'
 
+require_relative '../utilities'
+
 class UtilitiesTest < Test::Unit::TestCase
-
-  # Called before every test method runs. Can be used
-  # to set up fixture information.
-  def setup
-    # Do nothing
-  end
-
-  # Called after every test method runs. Can be used to tear
-  # down fixture information.
-
-  def teardown
-    # Do nothing
+  def test_run_shell_cmd
+    # pretend we're in a unixy place
+    assert_equal 0, Utilities.run_shell_command('ls')
   end
 end

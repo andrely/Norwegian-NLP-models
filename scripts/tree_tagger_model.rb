@@ -1,10 +1,10 @@
-require 'open3'
-
 require_relative 'utilities'
 require_relative 'logger_mixin'
 
 class TreeTaggerModel
+
   include Logging
+
   def initialize(model_fn)
     @tt_train_bin = '/Users/stinky/Work/tools/treetagger/bin/train-tree-tagger'
     @tt_predict_bin = '/Users/stinky/Work/tools/treetagger/bin/tree-tagger'
@@ -16,7 +16,7 @@ class TreeTaggerModel
     logger.info "Training TreeTagger model #{@par_fn}"
     cmd = "#{@tt_train_bin} #{lex_fn} #{open_fn} #{in_fn} #{@par_fn}"
     logger.info "Training with command: #{cmd}"
-    run_shell_command(cmd)
+    Utilities.run_shell_command(cmd)
   end
 
   def predict(opts={})
@@ -32,7 +32,7 @@ class TreeTaggerModel
     end
 
     cmd = "#{@tt_predict_bin} -token -lemma #{@par_fn} #{in_fn} #{out_fn}"
-    run_shell_command(cmd)
+    Utilities.run_shell_command(cmd)
   end
 
   def self.score(opts={})
@@ -67,12 +67,5 @@ class TreeTaggerModel
 
   def validate_model
     File.exist? @par_fn
-  end
-
-  def run_shell_command(cmd)
-    oe, s = Open3.capture2e(cmd)
-
-    print oe
-    print s
   end
 end
