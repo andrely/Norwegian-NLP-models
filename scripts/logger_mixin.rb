@@ -1,3 +1,5 @@
+require 'logger'
+
 module Logging
   # This is the magical bit that gets mixed into your classes
   def logger
