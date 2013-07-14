@@ -25,15 +25,21 @@ def create_treetagger_model descr
 
   model = TreeTaggerModel.new model_fn
   model.train descr[:in_file].path, descr[:lex_file].path, descr[:open_class_file].path
+
+  return model
 end
 
-def evaluate_treetagger_model model, in_fn, true_fn
-  pred_fn = descr[:in_file][0..-3] + 'pred'
+def evaluate_treetagger_model descr, model
+  pred_fn = descr[:pred_file].path
+  true_fn = descr[:true_file].path
+  out_fn = pred_fn[0..-5] + 'out'
 
-  model.predict :in_file => in_fn, :out_file => pred_fn
-  score = TreeTaggerModel.score :pred_fn => pred_fn, :true_fn => true_fn
 
-  print score
+  model.predict :in_fn => pred_fn, :out_fn => out_fn
+  lemma_score, tag_score = TreeTaggerModel.score :pred_fn => out_fn, :true_fn => true_fn
+
+  puts "Lemma score: " + lemma_score.join('/')
+  puts "Tag score  : " + tag_score.join('/')
 end
 
 Dir.chdir '..'
@@ -51,5 +57,6 @@ descr, fold_descr = create_treetagger_files(base_fn)
 create_treetagger_model descr
 
 fold_descr.each do |d|
-  create_treetagger_model d
+  m = create_treetagger_model d
+  evaluate_treetagger_model d, m
 end

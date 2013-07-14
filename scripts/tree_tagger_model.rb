@@ -1,3 +1,4 @@
+require_relative 'tree_tagger_source'
 require_relative 'utilities'
 require_relative 'logger_mixin'
 
@@ -31,7 +32,9 @@ class TreeTaggerModel
       raise ArgumentError
     end
 
+    logger.info "Predicting #{in_fn} to #{out_fn} using #{@par_fn}"
     cmd = "#{@tt_predict_bin} -token -lemma #{@par_fn} #{in_fn} #{out_fn}"
+    logger.info "Predicting with command: #{cmd}"
     Utilities.run_shell_command(cmd)
   end
 
@@ -43,26 +46,41 @@ class TreeTaggerModel
       raise ArgumentError
     end
 
-    correct = 0
+    correct_tag = 0
+    correct_lemma = 0
     total = 0
 
     Utilities.multiple_file_open [pred_fn, true_fn], 'r' do |files|
       pred_file, true_file = files
 
-      begin
-        pred_line = self.parse_tt_line
-        true_line = self.parse_tt_line
+      pred_src = TreeTaggerSource.new pred_file, columns: [:form, :tag, :lemma]
+      true_src = TreeTaggerSource.new true_file
 
-        if pred_line == tt_line
-          correct += 1
+      pred_words = pred_src.to_a.collect { |s| s[:words] }.flatten
+      true_words = true_src.to_a.collect { |s| s[:words] }.flatten
+
+      if pred_words.count != true_words.count
+        logger.info "Predicted (#{pred_words.count} and true #{true_words.count} token count does not agree."
+      end
+
+      pred_words.zip(true_words).each do |pred_word, true_word|
+        if pred_word[:form] != true_word[:form]
+          logger.warn "Predicted and true word forms does not agree (#{total+1}/#{pred_word[:form]}/#{true_word[:form]})"
+        end
+
+        if pred_word[:lemma] == true_word[:lemma]
+          correct_lemma += 1
+        end
+
+        if pred_word[:tag] == true_word[:tag]
+          correct_tag += 1
         end
 
         total += 1
-
-      end while pred_line and true_line
+      end
     end
 
-    return correct, total
+    return [correct_lemma, total, correct_lemma/total.to_f], [correct_tag, total, correct_tag/total.to_f]
   end
 
   def validate_model
