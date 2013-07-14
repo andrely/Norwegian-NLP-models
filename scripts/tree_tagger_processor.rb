@@ -44,6 +44,7 @@ class TreeTaggerProcessor < BaseProcessor
 
     words.each_with_index do |word, i|
       form = word[:form]
+      lemma = word[:lemma]
       pos = word[:pos]
 
       if word[:feat] != '_'
@@ -58,15 +59,15 @@ class TreeTaggerProcessor < BaseProcessor
         @descr.each_with_index do |fold_descr, i|
           if i == fold
             write_test_file fold_descr[:pred_file], form
-            write_word fold_descr[:true_file], form, pos
+            write_word fold_descr[:true_file], form, lemma, pos
           else
-            write_word fold_descr[:in_file], form, pos
+            write_word fold_descr[:in_file], form, lemma, pos
             add_to_lexicon(@lexicon[i], word, form, pos)
             add_to_open_classes(@open_classes[i], fold, word, pos)
           end
         end
       else
-        write_word @descr[0][:in_file], form, pos
+        write_word @descr[0][:in_file], form, lemma, pos
         add_to_lexicon(@lexicon[0], word, form, pos)
         add_to_open_classes(@open_classes[0], fold, word, pos)
       end
@@ -131,8 +132,8 @@ class TreeTaggerProcessor < BaseProcessor
     end
   end
 
-  def write_word(file, form, pos)
-    file.write "#{form}\t#{pos}\n"
+  def write_word(file, form, lemma, pos)
+    file.write "#{form}\t#{lemma}\t#{pos}\n"
   end
 
   def write_test_file(file, form)
@@ -204,6 +205,6 @@ class TreeTaggerProcessor < BaseProcessor
   end
 
   def has_folds?
-    return num_folds > 1
+    return @num_folds > 1
   end
 end

@@ -27,7 +27,7 @@ class TreeTaggerProcessorTest < Test::Unit::TestCase
     reader.process_all
     descr = writer.descr
 
-    assert_equal "ba\tsubst_ent\ngneh\tverb_pres\n.\tSENT\n", descr[:in_file].string
+    assert_equal "ba\tfoo\tsubst_ent\ngneh\tknark\tverb_pres\n.\t$.\tSENT\n", descr[:in_file].string
 
     # TODO order shouldn't matter for the following tests
     assert_equal "ba\tsubst_ent foo\ngneh\tverb_pres knark\n.\tSENT $.\n", descr[:lex_file].string
@@ -39,6 +39,7 @@ class TreeTaggerProcessorTest < Test::Unit::TestCase
     fold_gen = FoldProcessor.new(processor: writer, num_folds: 2)
 
     assert_equal 2, writer.num_folds
+    assert writer.has_folds?
     writer.create_descr
     assert_kind_of Enumerable, writer.descr
     assert_equal 2, writer.descr.size
@@ -51,10 +52,10 @@ class TreeTaggerProcessorTest < Test::Unit::TestCase
 
     descr = writer.descr
 
-    assert_equal "ba\tsubst_ent\n.\tSENT\n", descr[1][:in_file].string
-    assert_equal "gneh\tverb_pres\n.\tSENT\n", descr[0][:in_file].string
-    assert_equal "ba\tsubst_ent\n.\tSENT\n", descr[0][:true_file].string
-    assert_equal "gneh\tverb_pres\n.\tSENT\n", descr[1][:true_file].string
+    assert_equal "ba\tfoo\tsubst_ent\n.\t$.\tSENT\n", descr[1][:in_file].string
+    assert_equal "gneh\tknark\tverb_pres\n.\t$.\tSENT\n", descr[0][:in_file].string
+    assert_equal "ba\tfoo\tsubst_ent\n.\t$.\tSENT\n", descr[0][:true_file].string
+    assert_equal "gneh\tknark\tverb_pres\n.\t$.\tSENT\n", descr[1][:true_file].string
 
     # TODO again different order shouldn't fail tests
     assert_equal "ba\n.\n", descr[0][:pred_file].string
