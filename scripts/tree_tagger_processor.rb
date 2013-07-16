@@ -31,11 +31,11 @@ class TreeTaggerProcessor < BaseProcessor
     end
 
     if not @lexicon
-      @lexicon = (1..@num_folds).collect { |i| Hash.new }
+      @lexicon = (1..@num_folds).collect { Hash.new }
     end
 
     if not @open_classes
-      @open_classes = (1..@num_folds).collect { |i| Array.new }
+      @open_classes = (1..@num_folds).collect { Array.new }
     end
 
     words = sent[:words]
