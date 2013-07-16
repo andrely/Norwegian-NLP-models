@@ -35,4 +35,29 @@ class DataRepository
   def self.sample3_n_folds
     return @@sample3_n_folds
   end
+
+  @@sample4 = [{index: 0,
+                words: [{form: 'Verdensarv',
+                         lemma: 'verdensarv',
+                         tag: 'subst_prop'},
+                        {form: '.',
+                         lemma: '$.',
+                         tag: '<punkt>'}]},
+               {index: 1,
+                words: [{form: 'Reise',
+                         lemma: 'reise',
+                         tag: 'subst_appell_fem_ub_ent'},
+                        {form: 'til',
+                         lemma: 'til',
+                         tag: 'prep'},
+                        {form: 'Kina',
+                         lemma: 'kina',
+                         tag: 'subst_prop'},
+                        {form: ':',
+                         lemma: '$:',
+                         tag: '<kolon>'}]}]
+
+  def self.sample4
+    return @@sample4
+  end
 end

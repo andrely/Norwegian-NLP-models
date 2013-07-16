@@ -22,4 +22,10 @@ class Utilities
 
     return s
   end
+
+  def self.get_script_path
+    path = File.dirname __FILE__
+
+    return path
+  end
 end

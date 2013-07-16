@@ -1,4 +1,9 @@
+require_relative 'logger_mixin'
+
 class BaseProcessor
+
+  include Logging
+
   def initialize(processor=nil)
     @processor = processor
   end
