@@ -11,7 +11,10 @@ class ConcatenatedSource < BaseSource
 
   def reset
     @count = 0
-    @sources.each { |src| src.reset }
+    @current_source = 0
+    @sources.each do |src|
+      src.reset
+    end
   end
 
   def processing_last_source?

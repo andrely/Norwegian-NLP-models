@@ -70,6 +70,7 @@ class ConllSource < BaseSource
   end
 
   def reset
+    @count = 0
     @file.rewind
   end
 

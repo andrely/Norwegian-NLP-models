@@ -39,8 +39,9 @@ class OBTSource < BaseSource
   end
 
   def reset
+    @count = 0
     @file.rewind
-    @obno_iterator = OBNOTextIterator.new file
+    @obno_iterator = OBNOTextIterator.new @file
   end
 
   def size

@@ -62,6 +62,19 @@ END
       assert_equal(@@sample_sent_sizes[i], sent[:words].count)
       assert_equal(i, sent[:index])
     end
+
+    # reset and redo tests
+    reader.reset
+
+    sents = reader.to_a
+
+    assert_not_nil sents
+    assert_equal(2, sents.count)
+
+    sents.each_with_index do |sent, i|
+      assert_equal(@@sample_sent_sizes[i], sent[:words].count)
+      assert_equal(i, sent[:index])
+    end
   end
 
   def test_size

@@ -15,6 +15,19 @@ class ArraySourceTest < Test::Unit::TestCase
     4.times.each do |i|
       assert_equal i, result[i][:index]
     end
+
+    # reset and redo test
+
+    src.reset
+
+    result = src.to_a
+
+    assert_not_nil result
+    assert_equal 4, result.size
+
+    4.times.each do |i|
+      assert_equal i, result[i][:index]
+    end
   end
 
   def test_array_source_without_index

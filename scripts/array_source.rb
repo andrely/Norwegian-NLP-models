@@ -1,5 +1,5 @@
 require_relative 'base_source'
-
+require_relative 'utilities'
 # Simple reader on array of sentences, mainly for testing
 class ArraySource < BaseSource
   def initialize(sentences, processor)
@@ -28,7 +28,8 @@ class ArraySource < BaseSource
   end
 
   def shift
-    sent = @sentences[@pos]
+    # copy sentence to maintain original form in case of source reset
+    sent = Utilities.deep_copy @sentences[@pos]
 
     if not sent.has_key? :index
       sent[:index] = @pos
