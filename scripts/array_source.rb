@@ -29,6 +29,11 @@ class ArraySource < BaseSource
 
   def shift
     sent = @sentences[@pos]
+
+    if not sent.has_key? :index
+      sent[:index] = @pos
+    end
+
     @pos += 1
 
     return sent
