@@ -16,9 +16,9 @@ class OBTSource < BaseSource
     sent = sent.words.collect do |ob_word|
       word = {}
       word[:form] = ob_word.orig_string
-      ob_tag = ob_word.get_correct_tag
-      word[:lemma] = ob_tag.lemma.downcase
-      word[:tag] = ob_tag.clean_out_tag
+      ob_pos = ob_word.get_correct_tag
+      word[:lemma] = ob_pos.lemma.downcase
+      word[:pos] = ob_pos.clean_out_tag
 
       word
     end

@@ -34,7 +34,7 @@ END
     assert_not_nil words
     assert_equal 3, words.size
     assert_equal 'en', words[0][:lemma]
-    assert_equal 'nn', words[1][:tag]
+    assert_equal 'nn', words[1][:pos]
     assert_equal '.', words[2][:form]
 
     sent = sents[1]
@@ -44,7 +44,7 @@ END
     assert_not_nil words
     assert_equal 3, words.size
     assert_equal 'vi', words[0][:lemma]
-    assert_equal 'vb', words[1][:tag]
+    assert_equal 'vb', words[1][:pos]
     assert_equal '.', words[2][:form]
 
     # reset and redo tests
@@ -62,7 +62,7 @@ END
     assert_not_nil words
     assert_equal 3, words.size
     assert_equal 'en', words[0][:lemma]
-    assert_equal 'nn', words[1][:tag]
+    assert_equal 'nn', words[1][:pos]
     assert_equal '.', words[2][:form]
 
     sent = sents[1]
@@ -72,7 +72,7 @@ END
     assert_not_nil words
     assert_equal 3, words.size
     assert_equal 'vi', words[0][:lemma]
-    assert_equal 'vb', words[1][:tag]
+    assert_equal 'vb', words[1][:pos]
     assert_equal '.', words[2][:form]
   end
 end

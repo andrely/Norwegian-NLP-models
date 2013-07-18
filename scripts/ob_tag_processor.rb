@@ -15,15 +15,15 @@ class OBTagProcessor < BaseProcessor
 
   def process(sent)
     sent[:words].each do |word|
-      if word.has_key? :tag
-        tag = OBTagProcessor.normalize_tag word[:tag]
+      if word.has_key? :pos
+        pos = OBTagProcessor.normalize_pos word[:pos]
 
-        short_tag = @map[tag]
+        short_pos = @map[pos]
 
-        if not short_tag
-          logger.warn "Unknown tag #{word[:tag]} in sentence #{sent[:index]}"
+        if not short_pos
+          logger.warn "Unknown pos #{word[:pos]} in sentence #{sent[:index]}"
         else
-          word[:tag] = short_tag
+          word[:pos] = short_pos
         end
       else
         logger.warn "Word #{word[:form]} not annotated in sentence #{sent[:index]}"
@@ -35,21 +35,21 @@ class OBTagProcessor < BaseProcessor
 
   def self.parse_obt_map(file, map)
     file.each_line do |line|
-      long_tag, short_tag = line.split
-      long_tag = OBTagProcessor.normalize_tag long_tag
-      short_tag.downcase!
+      long_pos, short_pos = line.split
+      long_pos = OBTagProcessor.normalize_pos long_pos
+      short_pos.downcase!
 
-      if map.has_key? long_tag
-        Logging.logger.warn "Duplicate tag in OBT map file: #{long_tag} #{short_tag}"
+      if map.has_key? long_pos
+        Logging.logger.warn "Duplicate pos in OBT map file: #{long_pos} #{short_pos}"
       else
-        map[long_tag] = short_tag
+        map[long_pos] = short_pos
       end
     end
 
     return map
   end
 
-  def self.normalize_tag(tag)
-    return tag.split('_').sort().join('_').downcase
+  def self.normalize_pos(pos)
+    return pos.split('_').sort().join('_').downcase
   end
 end

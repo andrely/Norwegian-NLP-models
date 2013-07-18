@@ -53,7 +53,7 @@ class TreeTaggerModel
     Utilities.multiple_file_open [pred_fn, true_fn], 'r' do |files|
       pred_file, true_file = files
 
-      pred_src = TreeTaggerSource.new pred_file, columns: [:form, :tag, :lemma]
+      pred_src = TreeTaggerSource.new pred_file, columns: [:form, :pos, :lemma]
       true_src = TreeTaggerSource.new true_file
 
       pred_words = pred_src.to_a.collect { |s| s[:words] }.flatten
@@ -72,7 +72,7 @@ class TreeTaggerModel
           correct_lemma += 1
         end
 
-        if pred_word[:tag] == true_word[:tag]
+        if pred_word[:pos] == true_word[:pos]
           correct_tag += 1
         end
 

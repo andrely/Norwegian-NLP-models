@@ -39,23 +39,23 @@ class DataRepository
   @@sample4 = [{index: 0,
                 words: [{form: 'Verdensarv',
                          lemma: 'verdensarv',
-                         tag: 'subst_prop'},
+                         pos: 'subst_prop'},
                         {form: '.',
                          lemma: '$.',
-                         tag: '<punkt>'}]},
+                         pos: '<punkt>'}]},
                {index: 1,
                 words: [{form: 'Reise',
                          lemma: 'reise',
-                         tag: 'subst_appell_fem_ub_ent'},
+                         pos: 'subst_appell_fem_ub_ent'},
                         {form: 'til',
                          lemma: 'til',
-                         tag: 'prep'},
+                         pos: 'prep'},
                         {form: 'Kina',
                          lemma: 'kina',
-                         tag: 'subst_prop'},
+                         pos: 'subst_prop'},
                         {form: ':',
                          lemma: '$:',
-                         tag: '<kolon>'}]}]
+                         pos: '<kolon>'}]}]
 
   def self.sample4
     return @@sample4

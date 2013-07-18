@@ -17,12 +17,12 @@ END
 
     assert_not_nil map
     assert_equal 2, map.size
-    assert_equal 'jj-ds', map[OBTagProcessor.normalize_tag('adj_pos_be_ent')]
-    assert_equal '.', map[OBTagProcessor.normalize_tag('<PUNKT>')]
+    assert_equal 'jj-ds', map[OBTagProcessor.normalize_pos('adj_pos_be_ent')]
+    assert_equal '.', map[OBTagProcessor.normalize_pos('<PUNKT>')]
   end
 
   def test_normalize_tag
-    assert_equal 'adj_be_ent_pos', OBTagProcessor.normalize_tag('adj_pos_be_ent')
+    assert_equal 'adj_be_ent_pos', OBTagProcessor.normalize_pos('adj_pos_be_ent')
   end
 
   def test_ob_tag_processor
@@ -37,16 +37,16 @@ END
     assert_not_nil sent[:words]
     words = sent[:words]
     assert_equal 2, words.size
-    assert_equal 'nnp', words[0][:tag]
-    assert_equal '.', words[1][:tag]
+    assert_equal 'nnp', words[0][:pos]
+    assert_equal '.', words[1][:pos]
 
     sent = result[1]
     assert_not_nil sent[:words]
     words = sent[:words]
     assert_equal 4, words.size
-    assert_equal 'nn-ifs', words[0][:tag]
-    assert_equal 'prp', words[1][:tag]
-    assert_equal 'nnp', words[2][:tag]
-    assert_equal 'pnct', words[3][:tag]
+    assert_equal 'nn-ifs', words[0][:pos]
+    assert_equal 'prp', words[1][:pos]
+    assert_equal 'nnp', words[2][:pos]
+    assert_equal 'pnct', words[3][:pos]
   end
 end

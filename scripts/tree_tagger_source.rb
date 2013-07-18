@@ -2,14 +2,14 @@ require_relative 'base_source'
 
 class TreeTaggerSource < BaseSource
 
-  @@default_columns = [:form, :lemma, :tag]
-  @@default_sent_tag = 'SENT'
+  @@default_columns = [:form, :lemma, :pos]
+  @@default_sent_pos = 'SENT'
 
   def initialize(file, opts={})
     @file = file
     @columns = opts[:columns] || @@default_columns
     @count = 0
-    @sent_tag = opts[:sent_tag] || @@default_sent_tag
+    @sent_pos = opts[:sent_pos] || @@default_sent_pos
 
     super(opts[:processor] || nil)
   end
@@ -48,7 +48,7 @@ class TreeTaggerSource < BaseSource
 
       words << word
 
-      if word[:tag] == @sent_tag
+      if word[:pos] == @sent_pos
         return words
       end
     end
