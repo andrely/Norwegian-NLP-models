@@ -6,12 +6,10 @@ require_relative 'base_processor'
 class TreeTaggerProcessor < BaseProcessor
   attr_reader :descr, :num_folds
 
-  include Logging
-
   @@nn_closed_class_pos = %w(subst verb ufl adj adv fork interj symb ukjent)
 
   def initialize(opts={})
-    super()
+    super(opts[:processor] || nil)
 
     @base_name = opts[:base_name] || nil
     @descr = opts[:descr] || nil
@@ -47,7 +45,7 @@ class TreeTaggerProcessor < BaseProcessor
       lemma = word[:lemma]
       pos = word[:pos]
 
-      if word[:feat] != '_'
+      if word.has_key? :feat and word[:feat] != '_'
         pos = pos + '_' + word[:feat].split('|').join('_')
       end
 
