@@ -41,10 +41,10 @@ class HunposProcessorTest < Test::Unit::TestCase
 
     descr = writer.descr
 
-    assert_equal "ba\tsubst_ent\n.\tclb\n\n", descr[1][:in_file].string
-    assert_equal "gneh\tverb_pres\n.\tclb\n\n", descr[0][:in_file].string
-    assert_equal "ba\tsubst_ent\n.\tclb\n\n", descr[0][:true_file].string
-    assert_equal "gneh\tverb_pres\n.\tclb\n\n", descr[1][:true_file].string
+    assert_equal "ba\tsubst\n.\tclb\n\n", descr[1][:in_file].string
+    assert_equal "gneh\tverb\n.\tclb\n\n", descr[0][:in_file].string
+    assert_equal "ba\tsubst\n.\tclb\n\n", descr[0][:true_file].string
+    assert_equal "gneh\tverb\n.\tclb\n\n", descr[1][:true_file].string
 
     # TODO again different order shouldn't fail tests
     assert_equal "ba\n.\n\n", descr[0][:pred_file].string

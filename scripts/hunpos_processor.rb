@@ -29,10 +29,6 @@ class HunposProcessor < BaseProcessor
       form = word[:form]
       pos = word[:pos]
 
-      if word.has_key? :feat and word[:feat] != '_'
-        pos = pos + '_' + word[:feat].split('|').join('_')
-      end
-
       if fold
         @descr.each_with_index do |fold_descr, i|
           if i == fold

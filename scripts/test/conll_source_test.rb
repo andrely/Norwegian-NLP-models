@@ -1,5 +1,3 @@
-# encoding: utf-8
-
 require 'test/unit'
 
 require 'minitest/reporters'
@@ -8,46 +6,18 @@ MiniTest::Reporters.use!
 require 'stringio'
 
 require_relative '../conll_source'
+require_relative 'data_repository'
 
 class ConllSourceTest < Test::Unit::TestCase
-  @@sample_input = <<END
-1	Nokre	nokon	det	det	kvant|fl	2	DET	_	_
-2	refleksjonar	refleksjon	subst	subst	mask|appell|ub|fl	0	FRAG	_	_
-3	på	på	prep	prep	_	2	ATR	_	_
-4	vegen	veg	subst	subst	mask|appell|eint|bu	3	PUTFYLL	_	_
-5	,	$,	<komma>	<komma>	<ikke-clb>	2	IK	_	_
-6	om	om	prep	prep	_	2	ATR	_	_
-7	Paulus	Paulus	subst	subst	mask|prop	6	PUTFYLL	_	_
-8	og	og	konj	konj	<ikkje-clb>	10	KONJ	_	_
-9	"	$"	<anf>	<anf>	_	10	IK	_	_
-10	worldviews	worldview	subst	subst	appell|ub|fl|unorm	7	KOORD	_	_
-11	"	$"	<anf>	<anf>	_	10	IK	_	_
-12	|	$|	clb	clb	<overskrift>	2	IP	_	_
-
-1	Eg	eg	pron	pron	pers|1|eint|hum|nom	2	SUBJ	_	_
-2	var	vere	verb	verb	pret|<aux1/perf_part>	0	FINV	_	_
-3	på	på	prep	prep	_	2	ADV	_	_
-4	bibeltime	bibeltime	subst	subst	mask|appell|ub|eint	3	PUTFYLL	_	_
-END
-
-  @@sample_sent_sizes = [12, 4]
-
-  # Called after every test method runs. Can be used to tear
-  # down fixture information.
-
-  def teardown
-    # Do nothing
-  end
-
   def get_in_file
-    return StringIO.new(@@sample_input)
+    return StringIO.new(DataRepository.sample_conll)
   end
 
   def test_read_conll
     reader = ConllSource.new get_in_file
 
     reader.each_with_index do |sent, i|
-      assert_equal(@@sample_sent_sizes[i], sent[:words].count)
+      assert_equal(DataRepository.sample_conll_sent_sizes[i], sent[:words].count)
       assert_equal(i, sent[:index])
     end
 
@@ -59,7 +29,7 @@ END
     assert_equal(2, sents.count)
 
     sents.each_with_index do |sent, i|
-      assert_equal(@@sample_sent_sizes[i], sent[:words].count)
+      assert_equal(DataRepository.sample_conll_sent_sizes[i], sent[:words].count)
       assert_equal(i, sent[:index])
     end
 
@@ -72,7 +42,7 @@ END
     assert_equal(2, sents.count)
 
     sents.each_with_index do |sent, i|
-      assert_equal(@@sample_sent_sizes[i], sent[:words].count)
+      assert_equal(DataRepository.sample_conll_sent_sizes[i], sent[:words].count)
       assert_equal(i, sent[:index])
     end
   end

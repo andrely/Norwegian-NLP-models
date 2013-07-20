@@ -27,11 +27,11 @@ class TreeTaggerProcessorTest < Test::Unit::TestCase
     reader.process_all
     descr = writer.descr
 
-    assert_equal "ba\tfoo\tsubst_ent\ngneh\tknark\tverb_pres\n.\t$.\tSENT\n", descr[:in_file].string
+    assert_equal "ba\tfoo\tsubst\ngneh\tknark\tverb\n.\t$.\tSENT\n", descr[:in_file].string
 
     # TODO order shouldn't matter for the following tests
-    assert_equal "ba\tsubst_ent foo\ngneh\tverb_pres knark\n.\tSENT $.\n", descr[:lex_file].string
-    assert_equal "subst_ent verb_pres\n", descr[:open_class_file].string
+    assert_equal "ba\tsubst foo\ngneh\tverb knark\n.\tSENT $.\n", descr[:lex_file].string
+    assert_equal "subst verb\n", descr[:open_class_file].string
   end
 
   def test_create_files_with_folds
@@ -52,17 +52,17 @@ class TreeTaggerProcessorTest < Test::Unit::TestCase
 
     descr = writer.descr
 
-    assert_equal "ba\tfoo\tsubst_ent\n.\t$.\tSENT\n", descr[1][:in_file].string
-    assert_equal "gneh\tknark\tverb_pres\n.\t$.\tSENT\n", descr[0][:in_file].string
-    assert_equal "ba\tfoo\tsubst_ent\n.\t$.\tSENT\n", descr[0][:true_file].string
-    assert_equal "gneh\tknark\tverb_pres\n.\t$.\tSENT\n", descr[1][:true_file].string
+    assert_equal "ba\tfoo\tsubst\n.\t$.\tSENT\n", descr[1][:in_file].string
+    assert_equal "gneh\tknark\tverb\n.\t$.\tSENT\n", descr[0][:in_file].string
+    assert_equal "ba\tfoo\tsubst\n.\t$.\tSENT\n", descr[0][:true_file].string
+    assert_equal "gneh\tknark\tverb\n.\t$.\tSENT\n", descr[1][:true_file].string
 
     # TODO again different order shouldn't fail tests
     assert_equal "ba\n.\n", descr[0][:pred_file].string
     assert_equal "gneh\n.\n", descr[1][:pred_file].string
-    assert_equal "ba\tsubst_ent foo\n.\tSENT $.\n", descr[1][:lex_file].string
-    assert_equal "gneh\tverb_pres knark\n.\tSENT $.\n", descr[0][:lex_file].string
-    assert_equal "subst_ent\n", descr[1][:open_class_file].string
-    assert_equal "verb_pres\n", descr[0][:open_class_file].string
+    assert_equal "ba\tsubst foo\n.\tSENT $.\n", descr[1][:lex_file].string
+    assert_equal "gneh\tverb knark\n.\tSENT $.\n", descr[0][:lex_file].string
+    assert_equal "subst\n", descr[1][:open_class_file].string
+    assert_equal "verb\n", descr[0][:open_class_file].string
   end
 end

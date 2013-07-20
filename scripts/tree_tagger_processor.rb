@@ -45,10 +45,6 @@ class TreeTaggerProcessor < BaseProcessor
       lemma = word[:lemma]
       pos = word[:pos]
 
-      if word.has_key? :feat and word[:feat] != '_'
-        pos = pos + '_' + word[:feat].split('|').join('_')
-      end
-
       if i == len - 1 # last word, replace POS
         pos = 'SENT'
       end
