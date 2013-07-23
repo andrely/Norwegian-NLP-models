@@ -3,6 +3,10 @@ require_relative 'base_processor'
 class POSBuilderProcessor < BaseProcessor
   def process(sent)
     sent[:words].each do |word|
+      if word[:pos].match /\s+/
+        word[:pos] = word[:pos].split().join('_')
+      end
+
       if word.has_key? :feat and word[:feat] != '_'
         pos = word[:pos]
         word[:pos_bare] = pos
