@@ -8,7 +8,7 @@ require_relative 'data_repository'
 class FoldProcessorTest < Test::Unit::TestCase
   def test_fold_generator
     gen = FoldProcessor.new(num_folds: DataRepository.sample3_n_folds)
-    reader = ArraySource.new DataRepository.sample3, gen
+    reader = ArraySource.new(DataRepository.sample3, processor: gen)
     assert_not_nil gen
 
     result = reader.to_a

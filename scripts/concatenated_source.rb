@@ -6,7 +6,7 @@ class ConcatenatedSource < BaseSource
     @current_source = 0
     @count = 0
 
-    super(opts[:processor] || nil)
+    super(opts)
   end
 
   def reset
@@ -49,5 +49,9 @@ class ConcatenatedSource < BaseSource
 
   def size
     return @sources.inject { |total, src| total + src.size }
+  end
+
+  def pipeline_artifacts
+    return @processor.pipeline_artifacts + @sources.collect { |s| s.pipeline_artifacts }.flatten
   end
 end

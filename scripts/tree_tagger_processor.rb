@@ -2,20 +2,21 @@ require 'stringio'
 
 require_relative 'logger_mixin'
 require_relative 'base_processor'
+require_relative 'artifact'
 
 class TreeTaggerProcessor < BaseProcessor
-  attr_reader :descr, :num_folds
+  attr_reader :num_folds
 
   @@nn_closed_class_pos = %w(subst verb ufl adj adv fork interj symb ukjent)
 
   def initialize(opts={})
-    super(opts[:processor] || nil)
+    super(opts)
 
     @base_name = opts[:base_name] || nil
-    @descr = opts[:descr] || nil
+    @artifact = opts[:artifact] || nil
     @num_folds = opts[:num_folds] || 1
 
-    if @base_name and @descr
+    if @base_name and @artifact
       raise ArgumentError
     end
 
@@ -24,8 +25,8 @@ class TreeTaggerProcessor < BaseProcessor
   end
 
   def process(sent)
-    if not @descr
-      @descr = create_descr(@base_name)
+    if not @artifact
+      @artifact = create_artifact()
     end
 
     if not @lexicon
@@ -50,20 +51,20 @@ class TreeTaggerProcessor < BaseProcessor
       end
 
       if fold
-        @descr.each_with_index do |fold_descr, i|
+        @artifact.fold_ids.each do |i|
           if i == fold
-            write_test_file fold_descr[:pred_file], form
-            write_word fold_descr[:true_file], form, lemma, pos
+            write_test_file(@artifact.file(:pred, i), form)
+            write_word(@artifact.file(:true, i), form, lemma, pos)
           else
-            write_word fold_descr[:in_file], form, lemma, pos
+            write_word(@artifact.file(:in, i), form, lemma, pos)
             add_to_lexicon(@lexicon[i], word, form, pos)
-            add_to_open_classes(@open_classes[i], fold, word, pos)
+            add_to_open_classes(@open_classes[i], word, pos)
           end
         end
       else
-        write_word @descr[0][:in_file], form, lemma, pos
+        write_word(@artifact.file(:in), form, lemma, pos)
         add_to_lexicon(@lexicon[0], word, form, pos)
-        add_to_open_classes(@open_classes[0], fold, word, pos)
+        add_to_open_classes(@open_classes[0], word, pos)
       end
     end
 
@@ -71,37 +72,55 @@ class TreeTaggerProcessor < BaseProcessor
   end
 
   def post_process
-    create_lexicon_file(@descr, @lexicon)
+    create_lexicon_file(@artifact, @lexicon)
 
-    create_open_class_file(@descr, @open_classes)
+    create_open_class_file(@artifact, @open_classes)
 
-    close_descr @descr
-
-    @descr = @descr[0] unless has_folds?
+    @artifact.close
   end
 
-  def create_open_class_file(descr, open_classes)
-    descr.zip open_classes do |fold_descr, fold_open_classes|
-      fold_descr[:open_class_file].write fold_open_classes.join(' ')
-      fold_descr[:open_class_file].write "\n"
+  def create_open_class_file(artifact, open_classes)
+    if has_folds?
+      artifact.fold_ids.zip open_classes do |fold_id, fold_open_classes|
+        artifact.file(:open, fold_id).write fold_open_classes.join(' ')
+        artifact.file(:open, fold_id).write "\n"
+      end
+    else
+      open_classes = open_classes[0]
+      artifact.file(:open).write open_classes.join(' ')
+      artifact.file(:open).write "\n"
     end
   end
 
-  def create_lexicon_file(descr, lexicon)
-    descr.zip lexicon do |fold_descr, fold_lexicon|
-      fold_lexicon.each_pair do |k, v|
-        fold_descr[:lex_file].write k
+  def create_lexicon_file(artifact, lexicon)
+    if has_folds?
+      artifact.fold_ids.zip lexicon do |fold_id, fold_lexicon|
+        fold_lexicon.each_pair do |k, v|
+          artifact.file(:lexicon, fold_id).write k
+
+          v.each_pair do |pos, lemmas|
+            artifact.file(:lexicon, fold_id).write "\t#{pos} #{lemmas.join('_')}"
+          end
+
+          artifact.file(:lexicon, fold_id).write "\n"
+        end
+      end
+    else
+      lexicon = lexicon[0]
+
+      lexicon.each_pair do |k, v|
+        artifact.file(:lexicon).write k
 
         v.each_pair do |pos, lemmas|
-          fold_descr[:lex_file].write "\t#{pos} #{lemmas.join('_')}"
+          artifact.file(:lexicon).write "\t#{pos} #{lemmas.join('_')}"
         end
 
-        fold_descr[:lex_file].write "\n"
+        artifact.file(:lexicon).write "\n"
       end
     end
   end
 
-  def add_to_open_classes(open_classes, fold, word, pos)
+  def add_to_open_classes(open_classes, word, pos)
     if @@nn_closed_class_pos.find { |p| p == word[:pos] } and not open_classes.find { |p| p == pos }
       open_classes << pos
     end
@@ -142,52 +161,31 @@ class TreeTaggerProcessor < BaseProcessor
     end
   end
 
-  # TODO Hacky, rewrite this
-  def create_descr(base_name=nil)
-    if base_name
-      if has_folds?
-        @descr = (0...num_folds).collect do |i|
-          { in_file: File.new("#{base_name}_#{i}_in", 'w'),
-            pred_file: File.new("#{base_name}_#{i}_pred", 'w'),
-            true_file: File.new("#{base_name}_#{i}_true", 'w'),
-            lex_file: File.new("#{base_name}_#{i}_lex", 'w'),
-            open_class_file: File.new("#{base_name}_#{i}_open", 'w') }
-        end
-      else
-        @descr = [{ in_file: File.new("#{base_name}_in", 'w'),
-                    lex_file: File.new("#{base_name}_lex", 'w'),
-                    open_class_file: File.new("#{base_name}_open", 'w') }]
-      end
-    else
-      if has_folds?
-        @descr = (0...num_folds).collect do |i|
-          { in_file: StringIO.new,
-            pred_file: StringIO.new,
-            true_file: StringIO.new,
-            lex_file: StringIO.new,
-            open_class_file: StringIO.new }
-        end
-      else
-        # wraps single descr in array
-        @descr = [{ in_file: StringIO.new,
-                    lex_file: StringIO.new,
-                    open_class_file: StringIO.new }]
-      end
-    end
-
-    return @descr
+  def create_artifact
+    Artifact.new(basename: @base_name,
+                 num_folds: @num_folds,
+                 files: [:in, :open, :lexicon],
+                 id: @id)
   end
 
-  def close_descr(descr)
-    descr.each do |fold_descr|
-      fold_descr.each_value { |file| file.close unless file.closed? }
+  def artifact
+    if @artifact.nil?
+      @artifact = create_artifact
     end
 
-    return descr
+    return @artifact
+  end
+
+  def pipeline_artifacts
+    if @processor
+      return [@artifact] + @processor.pipeline_artifacts
+    else
+      return [@artifact]
+    end
   end
 
   def num_folds=(n)
-    if not @descr
+    if not @artifact
       @num_folds = n
 
       if @processor

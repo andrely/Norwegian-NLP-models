@@ -4,8 +4,8 @@ require_relative 'utilities'
 class OBTagProcessor < BaseProcessor
   @@map_file = 'obt-map.txt'
 
-  def initialize(processor=nil)
-    super(processor)
+  def initialize(opts={})
+    super(opts)
 
     File.open(File.join(Utilities.get_script_path, @@map_file)) do |f|
       @map = OBTagProcessor.parse_obt_map f, Hash.new

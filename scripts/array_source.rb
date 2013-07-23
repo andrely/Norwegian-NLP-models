@@ -2,11 +2,11 @@ require_relative 'base_source'
 require_relative 'utilities'
 # Simple reader on array of sentences, mainly for testing
 class ArraySource < BaseSource
-  def initialize(sentences, processor)
+  def initialize(sentences, opts={})
     @sentences = sentences
     @pos = 0
 
-    super(processor)
+    super(opts)
   end
 
   def reset

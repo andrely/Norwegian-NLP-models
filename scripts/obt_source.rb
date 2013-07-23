@@ -7,7 +7,7 @@ class OBTSource < BaseSource
     @obno_iterator = OBNOTextIterator.new file
     @count = 0
 
-    super(opts[:processor] || nil)
+    super(opts)
   end
 
   def shift

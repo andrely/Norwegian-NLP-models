@@ -10,7 +10,7 @@ require_relative 'data_repository'
 class ConcatenationProcessorTest < Test::Unit::TestCase
   def test_concatenated_null_processors
     conc_proc = ConcatenationProcessor.new [ NullProcessor.new, NullProcessor.new, NullProcessor.new ]
-    src = ArraySource.new DataRepository.sample2, conc_proc
+    src = ArraySource.new(DataRepository.sample2, processor: conc_proc)
 
     result = src.to_a
 
@@ -34,7 +34,7 @@ class ConcatenationProcessorTest < Test::Unit::TestCase
   def test_concatenated_fold_generator
     conc_proc = ConcatenationProcessor.new [NullProcessor.new,
                                             FoldProcessor.new(num_folds: DataRepository.sample3_n_folds)]
-    src= ArraySource.new DataRepository.sample3, conc_proc
+    src= ArraySource.new(DataRepository.sample3, processor: conc_proc)
 
     result = src.to_a
 

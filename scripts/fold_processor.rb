@@ -4,7 +4,7 @@ class FoldProcessor < BaseProcessor
   attr_reader :num_folds
 
   def initialize(opts = {})
-    super(opts[:processor] || nil)
+    super(opts)
 
     # TODO no way to call num_folds= here ?
     @num_folds = opts[:num_folds] || 5

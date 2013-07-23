@@ -11,7 +11,7 @@ class ConllSource < BaseSource
     @file = file
     @count = 0
 
-    super(opts[:processor] || nil)
+    super(opts)
   end
 
   def each

@@ -11,7 +11,7 @@ class TreeTaggerSource < BaseSource
     @count = 0
     @sent_pos = opts[:sent_pos] || @@default_sent_pos
 
-    super(opts[:processor] || nil)
+    super(opts)
   end
 
   def each

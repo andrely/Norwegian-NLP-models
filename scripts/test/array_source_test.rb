@@ -5,7 +5,7 @@ require_relative 'data_repository'
 
 class ArraySourceTest < Test::Unit::TestCase
   def test_array_source_with_index
-    src = ArraySource.new DataRepository.sample3, nil
+    src = ArraySource.new(DataRepository.sample3)
 
     result = src.to_a
 
@@ -35,7 +35,7 @@ class ArraySourceTest < Test::Unit::TestCase
     sample.each { |s| s.delete :index }
     sample.each { |s| assert_nil s[:index] }
 
-    src = ArraySource.new sample, nil
+    src = ArraySource.new(sample)
 
     result = src.to_a
 

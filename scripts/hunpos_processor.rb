@@ -1,66 +1,66 @@
 require_relative 'base_processor'
+require_relative 'artifact'
 
 class HunposProcessor < BaseProcessor
 
-  attr_reader :num_folds, :descr
+  attr_reader :num_folds
 
   def initialize(opts={})
-    super(opts[:processor] || nil)
+    super(opts)
 
     @base_name = opts[:base_name] || nil
-    @descr = opts[:descr] || nil
-    @num_folds = opts[:num_folds] || 1
+    @artifact = opts[:artifact] || nil
+    @num_folds = opts[:num_folds] || nil
 
-    if @base_name and @descr
+    if @base_name and @artifact
       raise ArgumentError
     end
   end
 
   def process(sent)
-    if not @descr
-      @descr = create_descr(@base_name)
+    if not @artifact
+      @artifact = create_artifact
     end
 
     words = sent[:words]
     fold = get_fold sent
-    len = words.count
 
     words.each_with_index do |word, i|
       form = word[:form]
       pos = word[:pos]
 
       if fold
-        @descr.each_with_index do |fold_descr, i|
+        @artifact.fold_ids.each do |i|
           if i == fold
-            write_test_file fold_descr[:pred_file], form
-            write_word fold_descr[:true_file], form, pos
+            write_test_file(@artifact.file(:pred, i), form)
+            write_word(@artifact.file(:true, i), form, pos)
           else
-            write_word fold_descr[:in_file], form, pos
+            write_word(@artifact.file(:in, i), form, pos)
           end
         end
       else
-        write_word @descr[0][:in_file], form, pos
+        write_word(@artifact.file(:in), form, pos)
       end
     end
 
     if fold
-      @descr.each_with_index do |fold_descr, i|
+      @artifact.fold_ids.each do |i|
         if i == fold
-          fold_descr[:pred_file].puts
-          fold_descr[:true_file].puts
+          @artifact.file(:pred, i).puts
+          @artifact.file(:true, i).puts
         else
-          fold_descr[:in_file].puts
+          @artifact.file(:in, i).puts
         end
       end
     else
-      @descr[0][:in_file].puts
+      @artifact.file(:in).puts
     end
 
     return sent
   end
 
   def post_process
-    @descr = @descr[0] unless has_folds?
+    @artifact.close
   end
 
   def get_fold(sent)
@@ -79,35 +79,31 @@ class HunposProcessor < BaseProcessor
     file.puts form
   end
 
-  def create_descr(base_name=nil)
-    if base_name
-      if has_folds?
-        @descr = (0...num_folds).collect do |i|
-          { in_file: File.new("#{base_name}_#{i}_in", 'w'),
-            pred_file: File.new("#{base_name}_#{i}_pred", 'w'),
-            true_file: File.new("#{base_name}_#{i}_true", 'w') }
-        end
-      else
-        @descr = [{ in_file: File.new("#{base_name}_in", 'w') }]
-      end
-    else
-      if has_folds?
-        @descr = (0...num_folds).collect do |i|
-          { in_file: StringIO.new,
-            pred_file: StringIO.new,
-            true_file: StringIO.new }
-        end
-      else
-        # wraps single descr in array
-        @descr = [{ in_file: StringIO.new }]
-      end
+  def create_artifact
+    Artifact.new(basename: @base_name,
+                 num_folds: @num_folds,
+                 files: :in,
+                 id: @id)
+  end
+
+  def artifact
+    if @artifact.nil?
+      @artifact = create_artifact
     end
 
-    return @descr
+    return @artifact
+  end
+
+  def pipeline_artifacts
+    if @processor
+      return [@artifact] + @processor.pipeline_artifacts
+    else
+      return [@artifact]
+    end
   end
 
   def num_folds=(n)
-    if not @descr
+    if not @artifact
       @num_folds = n
 
       if @processor
@@ -119,6 +115,6 @@ class HunposProcessor < BaseProcessor
   end
 
   def has_folds?
-    return @num_folds > 1
+    return (@num_folds and (@num_folds > 1))
   end
 end

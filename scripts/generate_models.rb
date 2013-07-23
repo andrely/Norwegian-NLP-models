@@ -2,37 +2,63 @@ require 'fileutils'
 
 require_relative 'tree_tagger_model'
 require_relative 'tree_tagger_processor'
+require_relative 'hunpos_processor'
 require_relative 'fold_processor'
+require_relative 'pos_builder_processor'
 require_relative 'conll_source'
+require_relative 'obt_source'
 require_relative 'concatenation_processor'
+require_relative 'concatenated_source'
 
-def create_treetagger_files(base_fn)
-  writer = TreeTaggerProcessor.new base_name: base_fn
-  fold_writer = TreeTaggerProcessor.new(base_name: base_fn)
+def create_files(base_path, tt_fn, hunpos_fn)
+  tt_full_path = File.join(base_path, tt_fn)
+  hunpos_full_path = File.join(base_path, hunpos_fn)
 
-  src = ConllSource.new(File.open('130606_bm_gullkorpus.conll'),
-                        processor: ConcatenationProcessor.new([writer,
-                                                               FoldProcessor.new(num_folds: 10,
-                                                                                 processor: fold_writer)]))
+  tt_writer = TreeTaggerProcessor.new base_name: tt_full_path,
+                                      id: :tt_writer
+  hunpos_writer = HunposProcessor.new base_name: hunpos_full_path,
+                                      id: :hunpos_writer
 
-  src.process_all
+  fold_tt_writer = FoldProcessor.new num_folds: 10,
+                                     processor: TreeTaggerProcessor.new(base_name: tt_full_path,
+                                                                        id: :tt_fold_writer)
+  fold_hunpos_writer = FoldProcessor.new num_folds: 10,
+                                         processor: HunposProcessor.new(base_name: hunpos_full_path,
+                                                                        id: :hunpos_fold_writer)
 
-  return writer.descr, fold_writer.descr
+  all_writers = ConcatenationProcessor.new [hunpos_writer, tt_writer,
+                                            fold_hunpos_writer, fold_tt_writer]
+
+  pos_proc = POSBuilderProcessor.new processor: all_writers
+
+  gull_src = ConllSource.new(File.open('130606_bm_gullkorpus.conll'))
+  ob_src1 = ConllSource.new(File.open('trening-utf8.vrt'),
+                            columns: [:form, :lemma, :pos])
+  ob_src2 = ConllSource.new(File.open('test-utf8.vrt'),
+                            columns: [:form, :lemma, :pos])
+  all_src = ConcatenatedSource.new [gull_src, ob_src1, ob_src2],
+                                   processor: pos_proc
+
+  all_src.process_all
+
+  return all_src.pipeline_artifacts
 end
 
-def create_treetagger_model descr
-  model_fn = (descr[:in_file].path)[0..-4] + '.par'
+def create_treetagger_model(artifact, fold_id=nil)
+  model_fn = artifact.basename(fold_id) + '.par'
 
   model = TreeTaggerModel.new model_fn
-  model.train descr[:in_file].path, descr[:lex_file].path, descr[:open_class_file].path
+  model.train(artifact.path(:in, fold_id),
+              artifact.path(:lexicon, fold_id),
+              artifact.path(:open, fold_id))
 
   return model
 end
 
-def evaluate_treetagger_model descr, model
-  pred_fn = descr[:pred_file].path
-  true_fn = descr[:true_file].path
-  out_fn = pred_fn[0..-5] + 'out'
+def evaluate_treetagger_model artifact, fold_id = nil, model
+  pred_fn = artifact.path(:pred, fold_id)
+  true_fn = artifact.path(:true, fold_id)
+  out_fn = artifact.basename(fold_id) + '.out'
 
 
   model.predict :in_fn => pred_fn, :out_fn => out_fn
@@ -45,18 +71,21 @@ end
 Dir.chdir '..'
 puts Dir.getwd
 
-path = 'integration_test'
-fn = 'tt_test'
+base_path = 'integration_test'
+tt_fn = 'tt_test'
+hunpos_fn = 'hunpos_test'
 
-FileUtils.mkpath path unless File.exist? path
+FileUtils.mkpath base_path unless File.exist? base_path
 
-base_fn = File.join path, fn
+artifacts = create_files(base_path, tt_fn, hunpos_fn)
 
-descr, fold_descr = create_treetagger_files(base_fn)
+tt_art = artifacts.detect { |d| d.id == :tt_writer }
 
-create_treetagger_model descr
+create_treetagger_model tt_art
 
-fold_descr.each do |d|
-  m = create_treetagger_model d
-  evaluate_treetagger_model d, m
+fold_tt_art = artifacts.detect { |d| d.id == :tt_fold_writer}
+
+fold_tt_art.fold_ids.each do |i|
+  m = create_treetagger_model fold_tt_art, i
+  evaluate_treetagger_model fold_tt_art, i, m
 end

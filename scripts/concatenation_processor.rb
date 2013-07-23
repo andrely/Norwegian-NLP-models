@@ -1,3 +1,5 @@
+require_relative 'utilities'
+
 class ConcatenationProcessor
   def initialize(processor_list)
     @processors = processor_list
@@ -6,7 +8,8 @@ class ConcatenationProcessor
   def process_internal(sent)
     sents = @processors.collect do |proc|
       if proc
-        proc.process_internal sent
+        new_sent = Utilities.deep_copy sent
+        proc.process_internal new_sent
       end
     end
 
@@ -33,5 +36,9 @@ class ConcatenationProcessor
 
   def has_folds?
     return false
+  end
+
+  def pipeline_artifacts
+    return @processors.collect { |p| p.pipeline_artifacts }.flatten
   end
 end

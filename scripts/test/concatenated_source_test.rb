@@ -19,8 +19,8 @@ class ConcatenatedSourceTest < Test::Unit::TestCase
   end
 
   def test_concatenated_source
-    src = ConcatenatedSource.new [ArraySource.new(DataRepository.sample3, nil),
-                                  ArraySource.new(DataRepository.sample3, nil)]
+    src = ConcatenatedSource.new [ArraySource.new(DataRepository.sample3),
+                                  ArraySource.new(DataRepository.sample3)]
 
     result = src.to_a
 

@@ -23,15 +23,17 @@ class TreeTaggerProcessorTest < Test::Unit::TestCase
 
   def test_create_files
     writer = TreeTaggerProcessor.new
-    reader = ArraySource.new DataRepository.sample1, writer
+    reader = ArraySource.new(DataRepository.sample1, processor: writer)
     reader.process_all
-    descr = writer.descr
+    artifact = reader.pipeline_artifacts[0]
 
-    assert_equal "ba\tfoo\tsubst\ngneh\tknark\tverb\n.\t$.\tSENT\n", descr[:in_file].string
+    assert_equal("ba\tfoo\tsubst\ngneh\tknark\tverb\n.\t$.\tSENT\n",
+                 artifact.file(:in).string)
 
     # TODO order shouldn't matter for the following tests
-    assert_equal "ba\tsubst foo\ngneh\tverb knark\n.\tSENT $.\n", descr[:lex_file].string
-    assert_equal "subst verb\n", descr[:open_class_file].string
+    assert_equal("ba\tsubst foo\ngneh\tverb knark\n.\tSENT $.\n",
+                 artifact.file(:lexicon).string)
+    assert_equal("subst verb\n", artifact.file(:open).string)
   end
 
   def test_create_files_with_folds
@@ -40,29 +42,32 @@ class TreeTaggerProcessorTest < Test::Unit::TestCase
 
     assert_equal 2, writer.num_folds
     assert writer.has_folds?
-    writer.create_descr
-    assert_kind_of Enumerable, writer.descr
-    assert_equal 2, writer.descr.size
-    assert_equal 2, writer.descr.size
+    writer.artifact
+    # assert_kind_of Enumerable, writer.descr[0]
+    assert_equal 2, writer.artifact.num_folds
 
-    reader = ArraySource.new(DataRepository.sample2, fold_gen)
+    reader = ArraySource.new(DataRepository.sample2, processor: fold_gen)
     reader.process_all
 
     assert_raise(RuntimeError) { fold_gen.num_folds = 3 }
 
-    descr = writer.descr
+    artifact = reader.pipeline_artifacts[0]
 
-    assert_equal "ba\tfoo\tsubst\n.\t$.\tSENT\n", descr[1][:in_file].string
-    assert_equal "gneh\tknark\tverb\n.\t$.\tSENT\n", descr[0][:in_file].string
-    assert_equal "ba\tfoo\tsubst\n.\t$.\tSENT\n", descr[0][:true_file].string
-    assert_equal "gneh\tknark\tverb\n.\t$.\tSENT\n", descr[1][:true_file].string
+    assert_equal("ba\tfoo\tsubst\n.\t$.\tSENT\n",
+                 artifact.file(:in, 1).string)
+    assert_equal("gneh\tknark\tverb\n.\t$.\tSENT\n",
+                 artifact.file(:in, 0).string)
+    assert_equal("ba\tfoo\tsubst\n.\t$.\tSENT\n",
+                 artifact.file(:true, 0).string)
+    assert_equal("gneh\tknark\tverb\n.\t$.\tSENT\n",
+                 artifact.file(:true, 1).string)
 
     # TODO again different order shouldn't fail tests
-    assert_equal "ba\n.\n", descr[0][:pred_file].string
-    assert_equal "gneh\n.\n", descr[1][:pred_file].string
-    assert_equal "ba\tsubst foo\n.\tSENT $.\n", descr[1][:lex_file].string
-    assert_equal "gneh\tverb knark\n.\tSENT $.\n", descr[0][:lex_file].string
-    assert_equal "subst\n", descr[1][:open_class_file].string
-    assert_equal "verb\n", descr[0][:open_class_file].string
+    assert_equal "ba\n.\n", artifact.file(:pred, 0).string
+    assert_equal "gneh\n.\n", artifact.file(:pred, 1).string
+    assert_equal "ba\tsubst foo\n.\tSENT $.\n", artifact.file(:lexicon, 1).string
+    assert_equal "gneh\tverb knark\n.\tSENT $.\n", artifact.file(:lexicon, 0).string
+    assert_equal "subst\n", artifact.file(:open, 1).string
+    assert_equal "verb\n", artifact.file(:open, 0).string
   end
 end

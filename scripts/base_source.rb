@@ -5,8 +5,9 @@ class BaseSource
   include Enumerable
   include Logging
 
-  def initialize(processor=nil)
-    @processor = processor
+  def initialize(opts={})
+    @processor = opts[:processor] || nil
+    @id = opts[:id] || :unknown_processor
   end
 
   def process
@@ -59,5 +60,13 @@ class BaseSource
 
   def num_folds
     return 1
+  end
+
+  def pipeline_artifacts
+    if @processor
+      return @processor.pipeline_artifacts
+    else
+      return []
+    end
   end
 end

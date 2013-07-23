@@ -26,7 +26,7 @@ END
   end
 
   def test_ob_tag_processor
-    src = ArraySource.new(DataRepository.sample4, OBTagProcessor.new)
+    src = ArraySource.new(DataRepository.sample4, processor: OBTagProcessor.new)
 
     result = src.to_a
 

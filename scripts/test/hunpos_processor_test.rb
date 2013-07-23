@@ -7,20 +7,22 @@ require_relative '../array_source'
 class HunposProcessorTest < Test::Unit::TestCase
   def test_hunpos_processor
     writer = HunposProcessor.new
-    src = ArraySource.new DataRepository.sample4, writer
+    src = ArraySource.new(DataRepository.sample4, processor: writer)
 
     result = src.to_a
-    descr = writer.descr
+    artifacts = src.pipeline_artifacts
+    assert_equal 1, artifacts.count
+    artifact = artifacts[0]
 
-    assert_not_nil descr
-    assert_not_nil descr[:in_file]
+    assert_not_nil artifact
+    assert_not_nil artifact.file :in
     exp_str = "Verdensarv\tsubst_prop\n" +
         ".\t<punkt>\n\n" +
         "Reise\tsubst_appell_fem_ub_ent\n" +
         "til\tprep\n" +
         "Kina\tsubst_prop\n" +
         ":\t<kolon>\n\n"
-    assert_equal exp_str, descr[:in_file].string
+    assert_equal exp_str, artifact.file(:in).string
   end
 
   def test_hunpos_with_folds
@@ -29,25 +31,24 @@ class HunposProcessorTest < Test::Unit::TestCase
 
     assert_equal 2, writer.num_folds
     assert writer.has_folds?
-    writer.create_descr
-    assert_kind_of Enumerable, writer.descr
-    assert_equal 2, writer.descr.size
-    assert_equal 2, writer.descr.size
+    writer.artifact
+    #assert_kind_of Enumerable, writer.descr[0]
+    assert_equal 2, writer.artifact.num_folds
 
-    src = ArraySource.new(DataRepository.sample2, fold_gen)
+    src = ArraySource.new(DataRepository.sample2, processor: fold_gen)
     src.process_all
 
     assert_raise(RuntimeError) { fold_gen.num_folds = 3 }
 
-    descr = writer.descr
+    artifact = src.pipeline_artifacts[0]
 
-    assert_equal "ba\tsubst\n.\tclb\n\n", descr[1][:in_file].string
-    assert_equal "gneh\tverb\n.\tclb\n\n", descr[0][:in_file].string
-    assert_equal "ba\tsubst\n.\tclb\n\n", descr[0][:true_file].string
-    assert_equal "gneh\tverb\n.\tclb\n\n", descr[1][:true_file].string
+    assert_equal "ba\tsubst\n.\tclb\n\n", artifact.file(:in, 1).string
+    assert_equal "gneh\tverb\n.\tclb\n\n", artifact.file(:in, 0).string
+    assert_equal "ba\tsubst\n.\tclb\n\n", artifact.file(:true, 0).string
+    assert_equal "gneh\tverb\n.\tclb\n\n", artifact.file(:true, 1).string
 
     # TODO again different order shouldn't fail tests
-    assert_equal "ba\n.\n\n", descr[0][:pred_file].string
-    assert_equal "gneh\n.\n\n", descr[1][:pred_file].string
-      end
+    assert_equal "ba\n.\n\n", artifact.file(:pred, 0).string
+    assert_equal "gneh\n.\n\n", artifact.file(:pred, 1).string
+  end
 end

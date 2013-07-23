@@ -4,8 +4,9 @@ class BaseProcessor
 
   include Logging
 
-  def initialize(processor=nil)
-    @processor = processor
+  def initialize(opts={})
+    @processor = opts[:processor] || nil
+    @id = opts[:id] || :unknown_processor
   end
 
   def process(sent)
@@ -34,5 +35,13 @@ class BaseProcessor
     end
 
     return nil
+  end
+
+  def pipeline_artifacts
+    if @processor
+      return @processor.pipeline_artifacts
+    else
+      return []
+    end
   end
 end
