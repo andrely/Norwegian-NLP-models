@@ -13,9 +13,13 @@ require_relative 'concatenated_source'
 def create_files(base_path, tt_fn, hunpos_fn)
   tt_full_path = File.join(base_path, tt_fn)
   hunpos_full_path = File.join(base_path, hunpos_fn)
+  coll_log = File.new('lemma_collision_log', 'w')
 
-  tt_writer = TreeTaggerProcessor.new base_name: tt_full_path,
-                                      id: :tt_writer
+  puts File.absolute_path coll_log.path
+
+  tt_writer = TreeTaggerProcessor.new(base_name: tt_full_path,
+                                      id: :tt_writer,
+                                      lemma_collision_log: coll_log)
   hunpos_writer = HunposProcessor.new base_name: hunpos_full_path,
                                       id: :hunpos_writer
 

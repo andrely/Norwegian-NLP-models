@@ -9,12 +9,17 @@ class TreeTaggerProcessor < BaseProcessor
 
   @@nn_closed_class_pos = %w(subst verb ufl adj adv fork interj symb ukjent)
 
+  # @option opts [String, NilClass] :base_name (nil) Base filename/path of the file artifacts.
+  # @option opts [Artifact, NilClass] :artifact (nil) Properly initialized Artifact instance to write output to.
+  # @option opts [Integer, NilClass] :num_folds (nil) Number of folds if using/creating a folded artifact.
+  # *option opts [IO, NilClass] :lemma_collision_log_file (nil) Lemma collision log file (Closed on completion).
   def initialize(opts={})
     super(opts)
 
     @base_name = opts[:base_name] || nil
     @artifact = opts[:artifact] || nil
     @num_folds = opts[:num_folds] || 1
+    @lemma_collision_log_file = opts[:lemma_collision_log] || nil
 
     if @base_name and @artifact
       raise ArgumentError
@@ -76,6 +81,7 @@ class TreeTaggerProcessor < BaseProcessor
 
     create_open_class_file(@artifact, @open_classes)
 
+    @lemma_collision_log_file.close if @lemma_collision_log_file
     @artifact.close
   end
 
@@ -126,6 +132,10 @@ class TreeTaggerProcessor < BaseProcessor
     end
   end
 
+  def log_lemma_collision(form, pos, combined_lemma)
+    @lemma_collision_log_file.puts("#{form}\t#{pos}\t#{combined_lemma}") if @lemma_collision_log_file
+  end
+
   def add_to_lexicon(lexicon, word, form, pos)
     lex_form = word[:form].downcase
 
@@ -139,8 +149,9 @@ class TreeTaggerProcessor < BaseProcessor
       lookup[pos] = [lemma]
     elsif lookup.has_key? pos
       unless lookup[pos].detect { |l| l == lemma }
+        # lemma is actually combined when writing the lexicon file
         lookup[pos] << lemma
-        logger.info "Combining lemma #{lookup[pos].join('_')} for form #{form}, pos #{pos}"
+        log_lemma_collision(form, pos, lookup[pos].join('_'))
       end
     end
   end

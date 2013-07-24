@@ -70,4 +70,13 @@ class TreeTaggerProcessorTest < Test::Unit::TestCase
     assert_equal "subst\n", artifact.file(:open, 1).string
     assert_equal "verb\n", artifact.file(:open, 0).string
   end
+
+  def test_log_lemma_collision
+    coll_log = StringIO.new
+    writer = TreeTaggerProcessor.new(lemma_collision_log: coll_log)
+    src = ArraySource.new(DataRepository.sample5, processor: writer)
+    src.process_all
+
+    assert_equal "ba\tfoo\tlemma1_lemma2\n", coll_log.string
+  end
 end

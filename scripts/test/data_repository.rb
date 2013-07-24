@@ -92,4 +92,12 @@ END
   def self.sample_conll_sent_sizes
     return @@sample_conll_sent_sizes
   end
+
+  @@sample5 = [{ index: 0,
+                 words: [{ form: 'ba', pos: 'foo', lemma: 'lemma1' },
+                         { form: 'ba', pos: 'foo', lemma: 'lemma2' },
+                         { form: '.', pos: '.', lemma: '$.' }]}]
+  def self.sample5
+    return @@sample5
+  end
 end
