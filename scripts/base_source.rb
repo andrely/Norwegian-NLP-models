@@ -8,6 +8,8 @@ class BaseSource
   def initialize(opts={})
     @processor = opts[:processor] || nil
     @id = opts[:id] || :unknown_processor
+
+    logger.info("Initializing #{self.class.name} id: #{@id}")
   end
 
   def process
