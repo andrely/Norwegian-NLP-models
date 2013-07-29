@@ -38,7 +38,7 @@ class TreeTaggerModel
     Utilities.run_shell_command(cmd)
   end
 
-  def self.score(opts={})
+  def score(opts={})
     pred_fn = opts[:pred_fn] || nil
     true_fn = opts[:true_fn] || nil
 
