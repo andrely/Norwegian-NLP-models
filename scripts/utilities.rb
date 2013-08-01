@@ -2,6 +2,8 @@ require 'open3'
 require 'io/wait'
 
 class Utilities
+  @@random = Random
+
   def self.multiple_file_open(filenames, perm, &block)
     files = filenames.collect { |fn| File.open fn, perm }
 
@@ -76,5 +78,17 @@ class Utilities
     path = File.dirname __FILE__
 
     return path
+  end
+
+  def self.srand(seed=nil)
+    if seed.nil?
+      @@random = Random
+    else
+      @@random = Random.new(seed)
+    end
+  end
+
+  def self.random
+    @@random
   end
 end
