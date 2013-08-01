@@ -100,4 +100,8 @@ END
   def self.sample5
     return @@sample5
   end
+
+  def self.sample_10_empty_sent
+    10.times.collect { |i| { index: i }}
+  end
 end
