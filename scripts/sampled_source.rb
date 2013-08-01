@@ -7,7 +7,7 @@ class SampledSource < ArraySource
   @@default_n = 10
 
   ##
-  # @param source [BaseSource, ConctenatedSource] Source to sample from.
+  # @param source [BaseSource, ConcatenatedSource] :n Source to sample from.
   # @options opts [Integer] Number of samples to collect.
   def initialize(source, opts={})
     @source = source
