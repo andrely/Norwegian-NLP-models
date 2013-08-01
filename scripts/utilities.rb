@@ -2,6 +2,11 @@ require 'open3'
 require 'io/wait'
 
 class Utilities
+
+  ##
+  # Global random instance
+  # Instances with specific seeds can be stored here with the @see Utilities::srand, and
+  # accessed with @see Utilities::random
   @@random = Random
 
   def self.multiple_file_open(filenames, perm, &block)
@@ -17,6 +22,7 @@ class Utilities
     return Marshal.load(Marshal.dump(obj))
   end
 
+  ##
   # Runs an external shell command.
   #
   # @note Stderr output is written to STDERR. Stdout output is written to STDOUT if no stdout_file
@@ -80,6 +86,10 @@ class Utilities
     return path
   end
 
+  ##
+  # Stores Random instance with the given seed, or a random seed if nil is passed
+  # @param seed [Integer, NilClass]
+  # @return [Random]
   def self.srand(seed=nil)
     if seed.nil?
       @@random = Random
@@ -88,6 +98,9 @@ class Utilities
     end
   end
 
+  ##
+  # Accessor for the global Random instance
+  # @return [Random]
   def self.random
     @@random
   end

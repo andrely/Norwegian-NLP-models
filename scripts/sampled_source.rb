@@ -1,8 +1,14 @@
 require_relative 'array_source'
 
+##
+# Source that samples n instances from another source using one pass reservoir sampling
 class SampledSource < ArraySource
+  # default n value if passed with no options
   @@default_n = 10
 
+  ##
+  # @param source [BaseSource, ConctenatedSource] Source to sample from.
+  # @options opts [Integer] Number of samples to collect.
   def initialize(source, opts={})
     @source = source
     @n = opts[:n] || nil
@@ -11,17 +17,21 @@ class SampledSource < ArraySource
       @n = @@default_n
     end
 
-    # data needed to keep top @n
+    # reservoir, data count and float format n for non-integer divisions
     @reservoir = Array.new(size=@n)
     @count = 1
     @n_f = @n.to_f
 
+    # sample first and then construct an in memory ArraySource of the sample
     sample
 
     # TODO sample stored twice, nuke reservoir after sampling
     super(Utilities.deep_copy(@reservoir), opts)
   end
 
+  ##
+  # @private
+  # Performs the sampling from the source. Result is stored in the reservoir
   def sample
     @source.each do |sent|
       if @count <= @n
