@@ -10,6 +10,7 @@ class ConllSource < BaseSource
     @columns = opts[:columns] || @@default_columns
     @file = file
     @count = 0
+    @line_no = 0
 
     super(opts)
   end
@@ -35,17 +36,20 @@ class ConllSource < BaseSource
 
     begin
       line = @file.readline
+      @line_no += 1
     rescue EOFError
       return words
     end
 
     while line.chomp != ''
       word = parse_line(line)
+      word[:line_no] = @line_no
 
       words << word
 
       begin
         line = @file.readline
+        @line_no += 1
       rescue EOFError
         return words
       end
