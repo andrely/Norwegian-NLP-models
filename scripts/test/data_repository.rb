@@ -63,7 +63,7 @@ class DataRepository
     return @@sample4
   end
 
-  @@sample_conll = <<END
+  @@sample_conll_1 = <<END
 1	Nokre	nokon	det	det	kvant|fl	2	DET	_	_
 2	refleksjonar	refleksjon	subst	subst	mask|appell|ub|fl	0	FRAG	_	_
 3	på	på	prep	prep	_	2	ATR	_	_
@@ -83,15 +83,25 @@ class DataRepository
 4	bibeltime	bibeltime	subst	subst	mask|appell|ub|eint	3	PUTFYLL	_	_
 END
 
-  def self.sample_conll
-    return @@sample_conll
+  def self.sample_conll_1
+    return @@sample_conll_1
+  end
+
+  def self.sample_conll_1_sent_sizes
+    return @@sample_conll_sent_sizes
+  end
+
+  @@sample_conll_2 = <<END
+Verdensarv	verdensarv	subst_prop
+.	$.	<punkt>
+
+END
+
+  def self.sample_conll_2
+    return @@sample_conll_2
   end
 
   @@sample_conll_sent_sizes = [12, 4]
-
-  def self.sample_conll_sent_sizes
-    return @@sample_conll_sent_sizes
-  end
 
   @@sample5 = [{ index: 0,
                  words: [{ form: 'ba', pos: 'foo', lemma: 'lemma1' },

@@ -64,7 +64,7 @@ class ConllSource < BaseSource
     cols = line.chomp.split("\t")
 
     if cols.count != @columns.count
-      raise RuntimeError
+      raise "Error parsing line #{@line_no}, #{cols.count} columns found instead of #{@columns.count}"
     end
 
     word = {}
@@ -90,7 +90,7 @@ class ConllSource < BaseSource
       stored_pos = @file.pos
       size_file.pos = 0
 
-      size_reader = ConllSource.new size_file
+      size_reader = ConllSource.new(size_file, columns: @columns)
       size_reader.to_a
 
       @file.pos = stored_pos
