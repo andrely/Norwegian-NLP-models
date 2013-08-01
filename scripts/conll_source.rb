@@ -12,6 +12,8 @@ class ConllSource < BaseSource
     @count = 0
     @line_no = 0
 
+    @size = nil
+
     super(opts)
   end
 
@@ -78,16 +80,24 @@ class ConllSource < BaseSource
     @file.rewind
   end
 
+  ##
+  # Accessor for the size of the corpus, ie. the number of sentences.
+  # @note On first access the whole corpus is read. The size is cached on further accesses.
+  # @return [Integer]
   def size
-    size_file = @file.clone
-    stored_pos = @file.pos
-    size_file.pos = 0
+    if @size.nil?
+      size_file = @file.clone
+      stored_pos = @file.pos
+      size_file.pos = 0
 
-    size_reader = ConllSource.new size_file
-    size_reader.to_a
+      size_reader = ConllSource.new size_file
+      size_reader.to_a
 
-    @file.pos = stored_pos
+      @file.pos = stored_pos
 
-    return size_reader.count
+      @size = size_reader.count
+    end
+
+    return @size
   end
 end

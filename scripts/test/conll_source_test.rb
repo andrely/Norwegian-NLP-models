@@ -56,6 +56,8 @@ class ConllSourceTest < Test::Unit::TestCase
     assert_equal 0, sent[:index]
 
     assert_equal 2, reader.size
+    # test once more from cachhe
+    assert_equal 2, reader.size
 
     sent = reader.shift
     assert_not_nil sent
