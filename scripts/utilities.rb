@@ -104,4 +104,11 @@ class Utilities
   def self.random
     @@random
   end
+
+  ##
+  # @param arr [Array] Array of instances implementing to_f()
+  # @return [Float] The mean/average of numbers in the array.
+  def self.mean(arr)
+    arr.inject { |acc, x| acc + x.to_f } / arr.count
+  end
 end
