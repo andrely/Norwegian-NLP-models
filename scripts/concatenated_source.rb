@@ -5,6 +5,7 @@ class ConcatenatedSource < BaseSource
     @sources = sources
     @current_source = 0
     @count = 0
+    @size = nil
 
     super(opts)
   end
@@ -48,7 +49,11 @@ class ConcatenatedSource < BaseSource
   end
 
   def size
-    return @sources.inject { |total, src| total + src.size }
+    if @size.nil?
+      @size = @sources.inject(0) { |total, src| total + src.size }
+    end
+
+    return @size
   end
 
   def pipeline_artifacts

@@ -3,21 +3,8 @@ require 'test/unit'
 require_relative '../array_source'
 require_relative '../concatenated_source'
 require_relative 'data_repository'
+
 class ConcatenatedSourceTest < Test::Unit::TestCase
-
-  # Called before every test method runs. Can be used
-  # to set up fixture information.
-  def setup
-    # Do nothing
-  end
-
-  # Called after every test method runs. Can be used to tear
-  # down fixture information.
-
-  def teardown
-    # Do nothing
-  end
-
   def test_concatenated_source
     src = ConcatenatedSource.new [ArraySource.new(DataRepository.sample3),
                                   ArraySource.new(DataRepository.sample3)]
@@ -66,5 +53,12 @@ class ConcatenatedSourceTest < Test::Unit::TestCase
     assert_equal [1, 2], result[6][:inner_index]
     assert_equal 7, result[7][:index]
     assert_equal [1, 3], result[7][:inner_index]
+  end
+
+  def test_size
+    src = ConcatenatedSource.new [ArraySource.new(DataRepository.sample3),
+                                  ArraySource.new(DataRepository.sample3)]
+
+    assert_equal(8, src.size)
   end
 end
