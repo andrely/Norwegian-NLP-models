@@ -1,4 +1,5 @@
 require 'test/unit'
+require_relative 'helper'
 
 require_relative '../obt_source'
 require 'stringio'

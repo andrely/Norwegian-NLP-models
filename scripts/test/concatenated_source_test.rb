@@ -1,4 +1,5 @@
 require 'test/unit'
+require_relative 'helper'
 
 require_relative '../array_source'
 require_relative '../concatenated_source'

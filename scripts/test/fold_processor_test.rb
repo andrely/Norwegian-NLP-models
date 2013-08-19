@@ -1,4 +1,5 @@
 require 'test/unit'
+require_relative 'helper'
 
 require_relative '../fold_processor'
 require_relative '../array_source'

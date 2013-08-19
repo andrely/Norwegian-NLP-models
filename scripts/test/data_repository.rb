@@ -71,7 +71,7 @@ class DataRepository
 5	,	$,	<komma>	<komma>	<ikke-clb>	2	IK	_	_
 6	om	om	prep	prep	_	2	ATR	_	_
 7	Paulus	Paulus	subst	subst	mask|prop	6	PUTFYLL	_	_
-8	og	og	konj	konj	<ikkje-clb>	10	KONJ	_	_
+8	og	og	konj	konj	<ikke-clb>	10	KONJ	_	_
 9	"	$"	<anf>	<anf>	_	10	IK	_	_
 10	worldviews	worldview	subst	subst	appell|ub|fl|unorm	7	KOORD	_	_
 11	"	$"	<anf>	<anf>	_	10	IK	_	_

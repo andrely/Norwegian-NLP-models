@@ -1,4 +1,5 @@
 require 'test/unit'
+require_relative 'helper'
 
 require_relative '../hunpos_processor'
 require_relative 'data_repository'

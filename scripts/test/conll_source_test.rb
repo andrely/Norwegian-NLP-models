@@ -1,7 +1,5 @@
 require 'test/unit'
-
-require 'minitest/reporters'
-MiniTest::Reporters.use!
+require_relative 'helper'
 
 require 'stringio'
 
