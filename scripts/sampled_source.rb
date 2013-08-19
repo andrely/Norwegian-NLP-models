@@ -13,7 +13,7 @@ class SampledSource < ArraySource
     @source = source
     @n = opts[:n] || nil
 
-    if @p.nil? and @n.nil?
+    if @n.nil?
       @n = @@default_n
     end
 
