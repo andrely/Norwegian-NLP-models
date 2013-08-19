@@ -9,7 +9,7 @@ class HunposProcessorTest < Test::Unit::TestCase
     writer = HunposProcessor.new
     src = ArraySource.new(DataRepository.sample4, processor: writer)
 
-    result = src.to_a
+    src.process_all
     artifacts = src.pipeline_artifacts
     assert_equal 1, artifacts.count
     artifact = artifacts[0]
@@ -22,7 +22,8 @@ class HunposProcessorTest < Test::Unit::TestCase
         "til\tprep\n" +
         "Kina\tsubst_prop\n" +
         ":\t<kolon>\n\n"
-    assert_equal exp_str, artifact.file(:in).string
+    assert_equal(exp_str, artifact.file(:in).string)
+    assert_equal("Verdensarv\n.\n\nReise\ntil\nKina\n:\n\n", artifact.file(:in_pred).string)
   end
 
   def test_hunpos_with_folds
@@ -43,7 +44,9 @@ class HunposProcessorTest < Test::Unit::TestCase
     artifact = src.pipeline_artifacts[0]
 
     assert_equal "ba\tsubst\n.\tclb\n\n", artifact.file(:in, 1).string
+    assert_equal "ba\n.\n\n", artifact.file(:in_pred, 1).string
     assert_equal "gneh\tverb\n.\tclb\n\n", artifact.file(:in, 0).string
+    assert_equal "gneh\n.\n\n", artifact.file(:in_pred, 0).string
     assert_equal "ba\tsubst\n.\tclb\n\n", artifact.file(:true, 0).string
     assert_equal "gneh\tverb\n.\tclb\n\n", artifact.file(:true, 1).string
 

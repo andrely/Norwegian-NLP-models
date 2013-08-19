@@ -18,14 +18,14 @@ class HunposProcessor < BaseProcessor
   end
 
   def process(sent)
-    if not @artifact
+    if @artifact.nil?
       @artifact = create_artifact
     end
 
     words = sent[:words]
     fold = get_fold sent
 
-    words.each_with_index do |word, i|
+    words.each_with_index do |word, _|
       form = word[:form]
       pos = word[:pos]
 
@@ -36,10 +36,12 @@ class HunposProcessor < BaseProcessor
             write_word(@artifact.file(:true, i), form, pos)
           else
             write_word(@artifact.file(:in, i), form, pos)
+            write_test_file(@artifact.file(:in_pred, i), form)
           end
         end
       else
         write_word(@artifact.file(:in), form, pos)
+        write_test_file(@artifact.file(:in_pred), form)
       end
     end
 
@@ -50,13 +52,15 @@ class HunposProcessor < BaseProcessor
           @artifact.file(:true, i).puts
         else
           @artifact.file(:in, i).puts
+          @artifact.file(:in_pred, i).puts
         end
       end
     else
       @artifact.file(:in).puts
+      @artifact.file(:in_pred).puts
     end
 
-    return sent
+    sent
   end
 
   def post_process
@@ -65,9 +69,9 @@ class HunposProcessor < BaseProcessor
 
   def get_fold(sent)
     if has_folds?
-      return sent[:fold]
+      sent[:fold]
     else
-      return nil
+      nil
     end
   end
 
@@ -82,7 +86,7 @@ class HunposProcessor < BaseProcessor
   def create_artifact
     Artifact.new(basename: @base_name,
                  num_folds: @num_folds,
-                 files: :in,
+                 files: [:in, :in_pred],
                  id: @id)
   end
 
@@ -91,19 +95,19 @@ class HunposProcessor < BaseProcessor
       @artifact = create_artifact
     end
 
-    return @artifact
+    @artifact
   end
 
   def pipeline_artifacts
     if @processor
-      return [@artifact] + @processor.pipeline_artifacts
+      [@artifact] + @processor.pipeline_artifacts
     else
-      return [@artifact]
+      [@artifact]
     end
   end
 
   def num_folds=(n)
-    if not @artifact
+    if @artifact.nil?
       @num_folds = n
 
       if @processor
@@ -115,6 +119,6 @@ class HunposProcessor < BaseProcessor
   end
 
   def has_folds?
-    return (@num_folds and (@num_folds > 1))
+    (@num_folds and (@num_folds > 1))
   end
 end
