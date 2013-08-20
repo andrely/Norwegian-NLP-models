@@ -12,6 +12,7 @@ class Utilities
   # Global random instance
   # Instances with specific seeds can be stored here with the @see Utilities::srand, and
   # accessed with @see Utilities::random
+  #noinspection RubyClassVariableUsageInspection
   @@random = Random
 
   class << self
@@ -28,6 +29,7 @@ class Utilities
 
   def self.deep_copy(obj)
     # simple deep copy that works for our test fixtures
+    #noinspection RubyResolve
     return Marshal.load(Marshal.dump(obj))
   end
 
@@ -42,18 +44,19 @@ class Utilities
   # @param stdout_file [IO, NilClass] IO instance to write shell process output to.
   # @return [Process::Status] Shell command exit status.
   def self.run_shell_command(cmd, stdin_file=nil, stdout_file=nil)
+    oe = ""
+    err = ""
+
     if stdin_file
       stdin, stdout, stderr, thr = Open3.popen3 cmd
 
-      oe = ""
-      err = ""
 
       # read and write stdin/stdout/stderr to avoid deadlocking on processes that blocks on writing.
       # e.g. HunPos
-      while true
+      until stdin_file.eof?
 
         # wait until stdout is emptied until we try to write or hunpos-tag will block
-        while not stdout.ready?
+        until stdout.ready?
           stdin.puts(stdin_file.readline)
 
           # break completely out if there is no more inout
@@ -120,8 +123,10 @@ class Utilities
   # @return [Random]
   def self.srand(seed=nil)
     if seed.nil?
+      #noinspection RubyClassVariableUsageInspection
       @@random = Random
     else
+      #noinspection RubyClassVariableUsageInspection
       @@random = Random.new(seed)
     end
   end
@@ -129,6 +134,7 @@ class Utilities
   ##
   # Accessor for the global Random instance
   # @return [Random]
+  #noinspection RubyClassVariableUsageInspection
   def self.random
     @@random
   end
