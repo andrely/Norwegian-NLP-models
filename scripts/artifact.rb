@@ -132,6 +132,24 @@ class Artifact
     end
   end
 
+  ##
+  # Retrieves an open IO/StringIO instance to the indicated artifact file.
+  # @param file_id [Symbol] Identifier key for the file
+  # @param perms [String] Permission string for File instances.
+  # @param fold_id [Integer, NilClass] Fold index, obligatory if artifact contains folds
+  # @return [IO, StringIO]
+  def open(file_id, perms=nil, fold_id=nil)
+    file = file(file_id, fold_id)
+
+    if file.kind_of?(File)
+      File.open(file.path, perms)
+    elsif file.kind_of?(StringIO)
+      StringIO.new(file.string)
+    else
+      raise RuntimeError
+    end
+  end
+
   # Accessor for the base path/filename optionally including the fold index
   # @param fold_id [Integer, NilClass] Fold index, obligatory if artifact contains folds
   # @return [String]
