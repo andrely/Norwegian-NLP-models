@@ -35,6 +35,8 @@ class HunposModel
 
     if train_fn and artifact
       raise RuntimeError
+    elsif train_fn.nil? and artifact.nil? and @artifact
+      train_with_artifact(@artifact)
     elsif train_fn
       train_with_file(train_fn, @model_fn)
     elsif artifact
@@ -42,6 +44,8 @@ class HunposModel
     else
       raise RuntimeError
     end
+
+    self
   end
   
   ##
@@ -82,11 +86,15 @@ class HunposModel
     if artifact.has_folds?
       artifact.fold_ids.each do |fold_id|
         logger.info "Training artifact #{artifact.id} fold #{fold_id}"
-        train_internal(artifact.file(:in, fold_id), model_fn(fold_id))
+        artifact_file = artifact.open(:in, 'r', fold_id)
+        train_internal(artifact_file, model_fn(fold_id))
+        artifact_file.close
       end
     else
       logger.info "Training artifact #{artifact.id}"
-      train_internal(artifact.file(:in), model_fn)
+      artifact_file = artifact.open(:in, 'r')
+      train_internal(artifact_file, model_fn)
+      artifact_file.close
     end
   end
 
