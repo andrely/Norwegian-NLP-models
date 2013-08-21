@@ -1,3 +1,5 @@
+require 'tmpdir'
+
 require_relative 'tree_tagger_source'
 require_relative 'utilities'
 require_relative 'logger_mixin'
@@ -6,18 +8,76 @@ class TreeTaggerModel
 
   include Logging
 
-  def initialize(model_fn)
+  def initialize(model_fn, opts={})
     @tt_train_bin = '/Users/stinky/Work/tools/treetagger/bin/train-tree-tagger'
     @tt_predict_bin = '/Users/stinky/Work/tools/treetagger/bin/tree-tagger'
 
-    @par_fn = model_fn
+    @model_fn = model_fn
+    
+    @artifact = opts[:artifact] || nil
   end
 
-  def train(in_fn, lex_fn, open_fn)
-    logger.info "Training TreeTagger model #{@par_fn}"
-    cmd = "#{@tt_train_bin} #{lex_fn} #{open_fn} #{in_fn} #{@par_fn}"
+  def train(opts={})
+    train_fn = opts[:train_fn] || nil
+    lexicon_fn = opts[:lexicon_fn] || nil
+    open_fn = opts[:open_fn] || nil
+    artifact = opts[:artifact] || nil
+
+    if train_fn and lexicon_fn and open_fn
+      if artifact
+        raise ArgumentError
+      else
+        train_internal(train_fn, lexicon_fn, open_fn)
+      end
+    elsif artifact
+      train_with_artifact(artifact)
+    elsif @artifact
+      train_with_artifact(@artifact)
+    end
+  end
+
+  ##
+  # @private
+  def train_with_io(in_file, lex_file, open_file)
+    Dir.mktmpdir do |dir|
+      in_path, lex_path, open_path = nil
+
+      File.open(File.join(dir, 'in'), 'w') do |in_f|
+        in_f.write(in_file.read)
+        in_path = in_f.path
+      end
+      
+      File.open(File.join(dir, 'lex'), 'w') do |lex_f|
+        lex_f.write(lex_file.read)
+        lex_path = lex_f.path
+      end
+      
+      File.open(File.join(dir, 'open'), 'w') do |open_f|
+        open_f.write(open_file.read)
+        open_path = open_f.path
+      end
+      
+      train_internal(in_path, lex_path, open_path)
+    end
+
+    self
+  end
+  
+  ##
+  # @private
+  def train_with_artifact(artifact)
+
+  end
+
+  ##
+  # @private
+  def train_internal(in_fn, lex_fn, open_fn)
+    logger.info "Training TreeTagger model #{@model_fn}"
+    cmd = "#{@tt_train_bin} #{lex_fn} #{open_fn} #{in_fn} #{@model_fn}"
     logger.info "Training with command: #{cmd}"
     Utilities.run_shell_command(cmd)
+
+    self
   end
 
   def predict(opts={})
@@ -32,10 +92,19 @@ class TreeTaggerModel
       raise ArgumentError
     end
 
-    logger.info "Predicting #{in_fn} to #{out_fn} using #{@par_fn}"
-    cmd = "#{@tt_predict_bin} -token -lemma #{@par_fn} #{in_fn} #{out_fn}"
+    logger.info "Predicting #{in_fn} to #{out_fn}"
+
+    Utilities.multiple_file_open([in_fn, out_fn], 'w') do |files|
+      in_file, out_file = files
+      predict_internal(@model_fn, in_file, out_file)
+    end
+  end
+
+  def predict_internal(model_fn, in_file, out_file)
+    logger.info "Predicting using #{model_fn}"
+    cmd = "#{@tt_predict_bin} -token -lemma #{model_fn}"
     logger.info "Predicting with command: #{cmd}"
-    Utilities.run_shell_command(cmd)
+    Utilities.run_shell_command(cmd, in_file, out_file)
   end
 
   def score(opts={})
@@ -84,6 +153,6 @@ class TreeTaggerModel
   end
 
   def validate_model
-    File.exist? @par_fn
+    File.exist? @model_fn
   end
 end
