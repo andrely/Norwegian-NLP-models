@@ -16,11 +16,8 @@ class HunposModelTest < Test::Unit::TestCase
     Dir.mktmpdir do |dir|
       model_fn = File.join(dir, "hunpos-model")
       model = HunposModel.new(model_fn: model_fn)
-      artifact = Artifact.new(files: [:in, :in_pred])
-      artifact.file(:in).write(TRAIN_STRING)
-      artifact.file(:in).rewind
-      artifact.file(:in_pred).write(TEST_STRING)
-      artifact.file(:in_pred).rewind
+      artifact = Artifact.from_strings({ in: TRAIN_STRING,
+                                         in_pred: TEST_STRING })
 
       model.train_with_artifact(artifact)
       assert(model.validate_model)

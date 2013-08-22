@@ -163,4 +163,19 @@ class Artifact
       raise ArgumentError
     end
   end
+
+  ##
+  # Creates an artifact from a Hash with file id (Symbol) and String pairs.
+  # @note Creates StringIO instances for the strings internally.
+  # @param file_ids_and_strings [Hash] File id (Symbol) and String pairs as keys and values respectively in a Hash.
+  # @return [Artifact]
+  def self.from_strings(file_ids_and_strings)
+    file_ids_and_stringio = {}
+
+    file_ids_and_strings.each do |file_id, string|
+      file_ids_and_stringio[file_id] = StringIO.new(string)
+    end
+
+    Artifact.new(files: file_ids_and_stringio)
+  end
 end
