@@ -21,6 +21,10 @@ class TreeTaggerModel
 
     @model_fn = opts[:model_fn] || nil
     @artifact = opts[:artifact] || nil
+
+    if @artifact
+      train
+    end
   end
 
   def train(opts={})
