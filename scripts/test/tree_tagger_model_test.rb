@@ -4,6 +4,7 @@ require 'tmpdir'
 require 'stringio'
 
 require_relative '../tree_tagger_model'
+require_relative '../artifact'
 
 class TreeTaggerModelTest < Test::Unit::TestCase
   LEX_DATA = "x\t0 X\t1 X\ny\t0 Y\n13\td D\n.\tSENT ."
@@ -16,8 +17,14 @@ class TreeTaggerModelTest < Test::Unit::TestCase
     Dir.mktmpdir do |dir|
       model_fn = File.join(dir, 'tt_model')
 
-      model = TreeTaggerModel.new(model_fn)
-      model.train_with_io(StringIO.new(TRAIN_DATA), StringIO.new(LEX_DATA), StringIO.new(OPEN_DATA))
+      model = TreeTaggerModel.new(model_fn: model_fn)
+
+      artifact = Artifact.from_strings({ in: TRAIN_DATA,
+                                         lexicon: LEX_DATA,
+                                         open: OPEN_DATA,
+                                         in_pred: IN_DATA })
+
+      model.train_with_artifact(artifact)
 
       assert(model.validate_model)
 
@@ -25,6 +32,5 @@ class TreeTaggerModelTest < Test::Unit::TestCase
       model.predict_internal(model_fn, StringIO.new(IN_DATA), out_file)
       assert_equal EXPECTED_DATA, out_file.string
     end
-
   end
 end

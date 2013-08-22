@@ -8,13 +8,18 @@ class TreeTaggerModel
 
   include Logging
 
-  def initialize(model_fn, opts={})
+  ##
+  # @option opts [String] :model_fn Path to model file, if it does not exist it can be created with
+  #   @see TreeTaggerModel::train.
+  # @option opts [Artifact] :artifact Fully constructed artifact.
+  def initialize(opts={})
     @tt_train_bin = '/Users/stinky/Work/tools/treetagger/bin/train-tree-tagger'
     @tt_predict_bin = '/Users/stinky/Work/tools/treetagger/bin/tree-tagger'
 
-    @model_fn = model_fn
-    
+    @model_fn = opts[:model_fn] || nil
     @artifact = opts[:artifact] || nil
+
+    raise ArgumentError if @model_fn.nil?
   end
 
   def train(opts={})
@@ -66,7 +71,8 @@ class TreeTaggerModel
   ##
   # @private
   def train_with_artifact(artifact)
-
+    artifact.file_ids { |file_id| artifact(file_id).rewind }
+    train_with_io(artifact.file(:in), artifact.file(:lexicon), artifact.file(:open))
   end
 
   ##
