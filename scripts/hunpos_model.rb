@@ -20,7 +20,7 @@ class HunposModel
     @model_fn = opts[:model_fn] || nil
 
     if @artifact
-      train(artifact: @artifact)
+      train
     end
   end
 
@@ -41,13 +41,15 @@ class HunposModel
       train_with_file(train_fn, @model_fn)
     elsif artifact
       train_with_artifact(artifact)
+    elsif @artifact
+      train_with_artifact(@artifact)
     else
       raise RuntimeError
     end
 
     self
   end
-  
+
   ##
   # @private
   def model_fn(fold_id=nil)
