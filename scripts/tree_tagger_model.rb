@@ -1,4 +1,5 @@
 require 'tmpdir'
+require 'stringio'
 
 require_relative 'tree_tagger_source'
 require_relative 'utilities'
@@ -7,6 +8,8 @@ require_relative 'logger_mixin'
 class TreeTaggerModel
 
   include Logging
+
+  DEFAULT_MODEL_FN_SUFFIX = "tt_model"
 
   ##
   # @option opts [String] :model_fn Path to model file, if it does not exist it can be created with
@@ -18,8 +21,6 @@ class TreeTaggerModel
 
     @model_fn = opts[:model_fn] || nil
     @artifact = opts[:artifact] || nil
-
-    raise ArgumentError if @model_fn.nil?
   end
 
   def train(opts={})
@@ -71,15 +72,26 @@ class TreeTaggerModel
   ##
   # @private
   def train_with_artifact(artifact)
-    artifact.file_ids { |file_id| artifact(file_id).rewind }
-    train_with_io(artifact.file(:in), artifact.file(:lexicon), artifact.file(:open))
+    if artifact.file_type == :mixed
+      raise RuntimeError
+    elsif artifact.file_type == StringIO
+      artifact.file_ids { |file_id| artifact.file(file_id).rewind }
+      train_with_io(artifact.file(:in), artifact.file(:lexicon), artifact.file(:open))
+    elsif artifact.file_type == File
+      artifact.file_ids { |file_id| artifact.file(file_id).rewind }
+      train_internal(artifact.file(:in).path, artifact.file(:lexicon).path, artifact.file(:open).path)
+    else
+      raise RuntimeError
+    end
+
+    self
   end
 
   ##
   # @private
   def train_internal(in_fn, lex_fn, open_fn)
-    logger.info "Training TreeTagger model #{@model_fn}"
-    cmd = "#{@tt_train_bin} #{lex_fn} #{open_fn} #{in_fn} #{@model_fn}"
+    logger.info "Training TreeTagger model #{model_fn}"
+    cmd = "#{@tt_train_bin} #{lex_fn} #{open_fn} #{in_fn} #{model_fn}"
     logger.info "Training with command: #{cmd}"
     Utilities.run_shell_command(cmd)
 
@@ -102,7 +114,7 @@ class TreeTaggerModel
 
     Utilities.multiple_file_open([in_fn, out_fn], 'w') do |files|
       in_file, out_file = files
-      predict_internal(@model_fn, in_file, out_file)
+      predict_internal(model_fn, in_file, out_file)
     end
   end
 
@@ -159,6 +171,23 @@ class TreeTaggerModel
   end
 
   def validate_model
-    File.exist? @model_fn
+    File.exist? model_fn
+  end
+
+  ##
+  # @private
+  def model_fn(fold_id=nil)
+    if @model_fn
+      raise RuntimeError if fold_id
+      @model_fn
+    elsif @artifact and @artifact.has_folds?
+      raise RuntimeError unless fold_id
+      return "#{@artifact.basename(fold_id)}.#{DEFAULT_MODEL_FN_SUFFIX}"
+    elsif @artifact
+      raise RuntimeError if fold_id
+      return "#{@artifact.basename}.#{DEFAULT_MODEL_FN_SUFFIX}"
+    else
+      raise RuntimeError
+    end
   end
 end
