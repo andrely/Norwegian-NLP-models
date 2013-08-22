@@ -48,32 +48,32 @@ class TreeTaggerProcessor < BaseProcessor
 
     words.each_with_index do |word, i|
       form = word[:form]
-      lemma = word[:lemma]
       pos = word[:pos]
+      lemma = word[:lemma]
 
       if i == len - 1 # last word, replace POS
         pos = 'SENT'
       end
 
       if fold
-        @artifact.fold_ids.each do |i|
-          if i == fold
-            write_test_file(@artifact.file(:pred, i), form)
-            write_word(@artifact.file(:true, i), form, lemma, pos)
+        @artifact.fold_ids.each do |j|
+          if j == fold
+            write_test_file(@artifact.file(:pred, j), form)
+            write_true_word(@artifact.file(:true, j), form, pos, lemma)
           else
-            write_word(@artifact.file(:in, i), form, lemma, pos)
-            add_to_lexicon(@lexicon[i], word, form, pos)
-            add_to_open_classes(@open_classes[i], word, pos)
+            write_word(@artifact.file(:in, j), form, pos)
+            add_to_lexicon(@lexicon[j], word, form, pos)
+            add_to_open_classes(@open_classes[j], word, pos)
           end
         end
       else
-        write_word(@artifact.file(:in), form, lemma, pos)
+        write_word(@artifact.file(:in), form, pos)
         add_to_lexicon(@lexicon[0], word, form, pos)
         add_to_open_classes(@open_classes[0], word, pos)
       end
     end
 
-    return sent
+    sent
   end
 
   def post_process
@@ -156,8 +156,16 @@ class TreeTaggerProcessor < BaseProcessor
     end
   end
 
-  def write_word(file, form, lemma, pos)
-    file.write "#{form}\t#{lemma}\t#{pos}\n"
+  ##
+  # @private
+  def write_word(file, form, pos)
+    file.write "#{form}\t#{pos}\n"
+  end
+
+  ##
+  # @private
+  def write_true_word(file, form, pos, lemma)
+    file.write "#{form}\t#{pos}\t#{lemma}\n"
   end
 
   def write_test_file(file, form)

@@ -28,7 +28,7 @@ class TreeTaggerProcessorTest < Test::Unit::TestCase
     reader.process_all
     artifact = reader.pipeline_artifacts[0]
 
-    assert_equal("ba\tfoo\tsubst\ngneh\tknark\tverb\n.\t$.\tSENT\n",
+    assert_equal("ba\tsubst\ngneh\tverb\n.\tSENT\n",
                  artifact.file(:in).string)
 
     # TODO order shouldn't matter for the following tests
@@ -54,13 +54,13 @@ class TreeTaggerProcessorTest < Test::Unit::TestCase
 
     artifact = reader.pipeline_artifacts[0]
 
-    assert_equal("ba\tfoo\tsubst\n.\t$.\tSENT\n",
+    assert_equal("ba\tsubst\n.\tSENT\n",
                  artifact.file(:in, 1).string)
-    assert_equal("gneh\tknark\tverb\n.\t$.\tSENT\n",
+    assert_equal("gneh\tverb\n.\tSENT\n",
                  artifact.file(:in, 0).string)
-    assert_equal("ba\tfoo\tsubst\n.\t$.\tSENT\n",
+    assert_equal("ba\tsubst\tfoo\n.\tSENT\t$.\n",
                  artifact.file(:true, 0).string)
-    assert_equal("gneh\tknark\tverb\n.\t$.\tSENT\n",
+    assert_equal("gneh\tverb\tknark\n.\tSENT\t$.\n",
                  artifact.file(:true, 1).string)
 
     # TODO again different order shouldn't fail tests
