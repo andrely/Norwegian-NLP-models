@@ -275,32 +275,32 @@ class HunposModel
   # Validates that the Hunpos 3rdparty binaries are present and runnable.
   # @return [TrueClass, FalseClass]
   def self.validate_binaries
-    begin
-      train_out = StringIO.new
-      Utilities.run_shell_command("#{HunposModel.train_bin} -h", nil, train_out)
-      train_out = train_out.string.split("\n")
+    train_out = Utilities.runnable?("#{HunposModel.train_bin} -h")
+
+    if not train_out
+      Logging.logger.error("Could not run HunposModel train binary #{HunposModel.train_bin}")
+      return false
+    else
+      train_out = train_out.split("\n")
 
       unless train_out.count > 0 and train_out[0].strip == "hunpos-train: train hunpos tagger from corpus"
         Logging.logger.error("Could not run HunposModel train binary #{HunposModel.train_bin}")
         return false
       end
-    rescue Errno::ENOENT
-      Logging.logger.error("Could not find HunposModel train binary #{HunposModel.train_bin}")
-      return false
     end
 
-    begin
-      tag_out = StringIO.new
-      Utilities.run_shell_command("#{HunposModel.tag_bin} -h", nil, tag_out)
-      tag_out = tag_out.string.split("\n")
+    tag_out = Utilities.runnable?("#{HunposModel.tag_bin} -h")
+
+    if not tag_out
+      Logging.logger.error("Could not run HunposModel tag binary #{HunposModel.tag_bin}")
+      return false
+    else
+      tag_out = tag_out.split("\n")
 
       unless tag_out.count > 0 and tag_out[0] == "hunpos-tag: HunPos HMM based tagger"
         Logging.logger.error("Could not run HunposModel tag binary #{HunposModel.tag_bin}")
         return false
       end
-    rescue Errno::ENOENT
-      Logging.logger.error("Could not find HunposModel tag binary #{HunposModel.tag_bin}")
-      return false
     end
 
     true

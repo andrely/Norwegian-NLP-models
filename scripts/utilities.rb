@@ -150,4 +150,19 @@ class Utilities
   def self.mean(arr)
     arr.inject { |acc, x| acc + x.to_f } / arr.count
   end
+
+  ##
+  # Runs the command string and returns the output if successful. Otherwise returns false
+  # @param cmd [String] Shell command string
+  # @return [String, FalseClass]
+  def self.runnable?(cmd)
+    begin
+      out = StringIO.new
+      Utilities.run_shell_command(cmd, nil, out)
+
+      return out.string
+    rescue Errno::ENOENT
+      return false
+    end
+  end
 end
