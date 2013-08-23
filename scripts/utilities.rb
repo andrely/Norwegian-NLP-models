@@ -96,6 +96,10 @@ class Utilities
       s = thr.value
     else
       out, err, s = Open3.capture3(cmd)
+
+      if stdout_file
+        stdout_file.write(out)
+      end
     end
 
     # echo errors on STDERR
@@ -105,6 +109,7 @@ class Utilities
     if stdout_file.nil?
       puts(oe) if not self.external_command_silent
     else
+      #noinspection RubyScope
       puts(out) if not self.external_command_silent
     end
 

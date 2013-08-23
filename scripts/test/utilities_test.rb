@@ -14,9 +14,14 @@ class UtilitiesTest < Test::Unit::TestCase
     in_str = "ba\nfoo\nbork\nknark\n"
     in_file = StringIO.new(in_str)
     out_file = StringIO.new
-    status = Utilities.run_shell_command('cat', stdin_file=in_file, stdout_file=out_file)
+    status = Utilities.run_shell_command('cat', in_file, out_file)
     assert_equal 0, status.exitstatus
     assert_equal in_file.string, out_file.string
+
+    out_file = StringIO.new
+    status = Utilities.run_shell_command('echo foo', nil, out_file)
+    assert_equal(0, status.exitstatus)
+    assert_equal(out_file.string, "foo\n")
   end
 
   def test_random
