@@ -33,4 +33,24 @@ class TreeTaggerModelTest < Test::Unit::TestCase
       assert_equal EXPECTED_DATA, out_file.string
     end
   end
+
+  def test_validate_binaries
+    assert TreeTaggerModel.validate_binaries
+
+    old_train_bin = TreeTaggerModel.train_bin
+    old_tag_bin = TreeTaggerModel.predict_bin
+
+    TreeTaggerModel.predict_bin = 'knark'
+    assert !TreeTaggerModel.validate_binaries
+    TreeTaggerModel.predict_bin = 'ls'
+    assert !TreeTaggerModel.validate_binaries
+    TreeTaggerModel.predict_bin = old_tag_bin
+
+    TreeTaggerModel.train_bin = 'knark'
+    assert !TreeTaggerModel.validate_binaries
+    TreeTaggerModel.train_bin = 'ls'
+    assert !TreeTaggerModel.validate_binaries
+    TreeTaggerModel.train_bin = old_train_bin
+
+  end
 end

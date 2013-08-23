@@ -184,6 +184,42 @@ class TreeTaggerModel
   end
 
   ##
+  # Validates that the Treetagger 3rdparty binaries are present and runnable.
+  # @return [TrueClass, FalseClass]
+  def self.validate_binaries
+    # Treetagger puts its help output on stderr
+    out_train = Utilities.runnable?("#{TreeTaggerModel.train_bin} 2>&1")
+
+    if not out_train
+      Logging.logger.error("Could not run Treetagger train binary #{TreeTaggerModel.train_bin}")
+      return false
+    else
+      out_train = out_train.strip.split("\n")
+
+      unless out_train.count > 0 and out_train[0] == "USAGE: train-tree-tagger [options] <lexicon> <open class file> <input file> <output file>"
+        Logging.logger.error("Could not run Treetagger train binary #{TreeTaggerModel.train_bin}")
+        return false
+      end
+    end
+
+    out_predict = Utilities.runnable?("#{TreeTaggerModel.predict_bin} 2>&1")
+
+    if not out_predict
+      Logging.logger.error("Could not run Treetagger predict binary #{TreeTaggerModel.predict_bin}")
+      return false
+    else
+      out_predict = out_predict.strip.split("\n")
+
+      unless out_predict.count > 0 and out_predict[0] == "USAGE:  tree-tagger {-options-} <parameter file> {<input file> {<output file>}}"
+        Logging.logger.error("Could not run Treetagger predict binary #{TreeTaggerModel.predict_bin}")
+        return false
+      end
+    end
+
+    return true
+  end
+
+  ##
   # @private
   def model_fn(fold_id=nil)
     if @model_fn
