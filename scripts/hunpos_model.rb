@@ -1,3 +1,5 @@
+require 'stringio'
+
 require_relative 'logger_mixin'
 require_relative 'utilities'
 require_relative 'conll_source'
@@ -263,5 +265,39 @@ class HunposModel
     else
       false
     end
+  end
+
+  ##
+  # Validates that the Hunpos 3rdparty binaries are present and runnable.
+  # @return [TrueClass, FalseClass]
+  def self.validate_binaries
+    unless File.exists?(HUNPOS_TAG_BIN)
+      Logging.logger.error("Could not find HunposModel tag binary #{HUNPOS_TAG_BIN}")
+      return false
+    end
+
+    unless File.exists?(HUNPOS_TRAIN_BIN)
+      Logging.logger.error("Could not find HunposModel train binary #{HUNPOS_TRAIN_BIN}")
+    end
+
+    train_out = StringIO.new
+    Utilities.run_shell_command("#{HUNPOS_TRAIN_BIN} -h", nil, train_out)
+    train_out = train_out.string.split("\n")
+
+    unless train_out.count > 0 and train_out[0].strip == "hunpos-train: train hunpos tagger from corpus"
+      Logging.logger.error("Could not run HunposModel train binary #{HUNPOS_TRAIN_BIN}")
+      return false
+    end
+
+    tag_out = StringIO.new
+    Utilities.run_shell_command("#{HUNPOS_TAG_BIN} -h", nil, tag_out)
+    tag_out = tag_out.string.split("\n")
+
+    unless tag_out.count > 0 and tag_out[0] == "hunpos-tag: HunPos HMM based tagger"
+      Logging.logger.error("Could not run HunposModel tag binary #{HUNPOS_TRAIN_BIN}")
+      return false
+    end
+
+    true
   end
 end

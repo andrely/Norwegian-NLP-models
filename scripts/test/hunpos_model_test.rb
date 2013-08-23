@@ -34,4 +34,8 @@ class HunposModelTest < Test::Unit::TestCase
       assert_in_delta(0.888, score, delta=0.001)
     end
   end
+
+  def test_validate_binaries
+    assert HunposModel.validate_binaries
+  end
 end
