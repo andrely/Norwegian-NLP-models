@@ -9,15 +9,20 @@ class TreeTaggerModel
 
   include Logging
 
-  DEFAULT_MODEL_FN_SUFFIX = "tt_model"
+  class << self
+    attr_accessor :train_bin, :predict_bin, :default_model_fn_suffix
+  end
+
+  @train_bin = '/Users/stinky/Work/tools/treetagger/bin/train-tree-tagger'
+  @predict_bin = '/Users/stinky/Work/tools/treetagger/bin/tree-tagger'
+
+  @default_model_fn_suffix = "tt_model"
 
   ##
   # @option opts [String] :model_fn Path to model file, if it does not exist it can be created with
   #   @see TreeTaggerModel::train.
   # @option opts [Artifact] :artifact Fully constructed artifact.
   def initialize(opts={})
-    @tt_train_bin = '/Users/stinky/Work/tools/treetagger/bin/train-tree-tagger'
-    @tt_predict_bin = '/Users/stinky/Work/tools/treetagger/bin/tree-tagger'
 
     @model_fn = opts[:model_fn] || nil
     @artifact = opts[:artifact] || nil
@@ -95,7 +100,7 @@ class TreeTaggerModel
   # @private
   def train_internal(in_fn, lex_fn, open_fn)
     logger.info "Training TreeTagger model #{model_fn}"
-    cmd = "#{@tt_train_bin} #{lex_fn} #{open_fn} #{in_fn} #{model_fn}"
+    cmd = "#{TreeTaggerModel.train_bin} #{lex_fn} #{open_fn} #{in_fn} #{model_fn}"
     logger.info "Training with command: #{cmd}"
     Utilities.run_shell_command(cmd)
 
@@ -124,7 +129,7 @@ class TreeTaggerModel
 
   def predict_internal(model_fn, in_file, out_file)
     logger.info "Predicting using #{model_fn}"
-    cmd = "#{@tt_predict_bin} -token -lemma #{model_fn}"
+    cmd = "#{TreeTaggerModel.predict_bin} -token -lemma #{model_fn}"
     logger.info "Predicting with command: #{cmd}"
     Utilities.run_shell_command(cmd, in_file, out_file)
   end
@@ -186,10 +191,10 @@ class TreeTaggerModel
       @model_fn
     elsif @artifact and @artifact.has_folds?
       raise RuntimeError unless fold_id
-      return "#{@artifact.basename(fold_id)}.#{DEFAULT_MODEL_FN_SUFFIX}"
+      return "#{@artifact.basename(fold_id)}.#{TreeTaggerModel.default_model_fn_suffix}"
     elsif @artifact
       raise RuntimeError if fold_id
-      return "#{@artifact.basename}.#{DEFAULT_MODEL_FN_SUFFIX}"
+      return "#{@artifact.basename}.#{TreeTaggerModel.default_model_fn_suffix}"
     else
       raise RuntimeError
     end
