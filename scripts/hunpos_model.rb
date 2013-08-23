@@ -1,6 +1,5 @@
 require 'stringio'
 
-require_relative 'logger_mixin'
 require_relative 'base_model'
 require_relative 'utilities'
 require_relative 'conll_source'
@@ -45,7 +44,9 @@ class HunposModel < BaseModel
   ##
   # @private
   def train_with_file(train_fn, model_fn)
-    train_internal(File.open(train_fn), model_fn)
+    File.open(train_fn) do |file|
+      train_internal(file, model_fn)
+    end
   end
 
   ##
@@ -63,15 +64,15 @@ class HunposModel < BaseModel
     if artifact.has_folds?
       artifact.fold_ids.each do |fold_id|
         logger.info "Training artifact #{artifact.id} fold #{fold_id}"
-        artifact_file = artifact.open(:in, 'r', fold_id)
-        train_internal(artifact_file, model_fn(fold_id))
-        artifact_file.close
+        artifact.open(:in, 'r', fold_id) do |file|
+          train_internal(file, model_fn(fold_id))
+        end
       end
     else
       logger.info "Training artifact #{artifact.id}"
-      artifact_file = artifact.open(:in, 'r')
-      train_internal(artifact_file, model_fn)
-      artifact_file.close
+      artifact.open(:in, 'r') do |file|
+        train_internal(file, model_fn)
+      end
     end
   end
 

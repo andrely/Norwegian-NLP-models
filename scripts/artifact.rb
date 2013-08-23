@@ -17,6 +17,7 @@ class Artifact
     @basename = opts[:basename] || nil
     @id = opts[:id] || :unknown_artifact
     @files = opts[:files] || nil
+    @file_type
 
     if has_folds?
       @files = *@files
@@ -99,6 +100,12 @@ class Artifact
     end
   end
 
+  ##
+  # @return [Enumerable] The id's (Symbol) for the resources in this Artifact instance.
+  def file_ids
+    @files.keys
+  end
+
   # Accessor for IO instances of the various files in the artifact
   # @param file_id [Symbol] Identifier key for the file
   # @param fold_id [Integer, NilClass] Fold index, obligatory if artifact contains folds
@@ -137,16 +144,24 @@ class Artifact
   # @param file_id [Symbol] Identifier key for the file
   # @param perms [String] Permission string for File instances.
   # @param fold_id [Integer, NilClass] Fold index, obligatory if artifact contains folds
+  # @yieldparam file [IO, StringIO] A block is passed the open IO/StringIO instance which is automatically closed.
   # @return [IO, StringIO]
   def open(file_id, perms=nil, fold_id=nil)
     file = file(file_id, fold_id)
 
     if file.kind_of?(File)
-      File.open(file.path, perms)
+      file = File.open(file.path, perms)
     elsif file.kind_of?(StringIO)
-      StringIO.new(file.string)
+      file = StringIO.new(file.string)
     else
       raise RuntimeError
+    end
+
+    if block_given?
+      yield file
+      file.close
+    else
+      file
     end
   end
 
@@ -177,5 +192,21 @@ class Artifact
     end
 
     Artifact.new(files: file_ids_and_stringio)
+  end
+
+  def file_type
+    return @file_type if @file_type
+
+    @file_type = nil
+
+    file_ids.each do |file_id|
+      if @file_type.nil?
+        @file_type = file(file_id).class
+      elsif @file_type != file(file_id).class
+        return :mixed
+      end
+    end
+
+    @file_type
   end
 end
