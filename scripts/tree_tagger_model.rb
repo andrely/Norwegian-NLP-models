@@ -1,13 +1,12 @@
 require 'tmpdir'
 require 'stringio'
 
+require_relative 'logger_mixin'
+require_relative 'base_model'
 require_relative 'tree_tagger_source'
 require_relative 'utilities'
-require_relative 'logger_mixin'
 
-class TreeTaggerModel
-
-  include Logging
+class TreeTaggerModel < BaseModel
 
   class << self
     attr_accessor :train_bin, :predict_bin, :default_model_fn_suffix
@@ -17,20 +16,6 @@ class TreeTaggerModel
   @predict_bin = '/Users/stinky/Work/tools/treetagger/bin/tree-tagger'
 
   @default_model_fn_suffix = "tt_model"
-
-  ##
-  # @option opts [String] :model_fn Path to model file, if it does not exist it can be created with
-  #   @see TreeTaggerModel::train.
-  # @option opts [Artifact] :artifact Fully constructed artifact.
-  def initialize(opts={})
-
-    @model_fn = opts[:model_fn] || nil
-    @artifact = opts[:artifact] || nil
-
-    if @artifact
-      train
-    end
-  end
 
   def train(opts={})
     train_fn = opts[:train_fn] || nil
@@ -179,10 +164,6 @@ class TreeTaggerModel
     return [correct_lemma, total, correct_lemma/total.to_f], [correct_tag, total, correct_tag/total.to_f]
   end
 
-  def validate_model
-    File.exist? model_fn
-  end
-
   ##
   # Validates that the Treetagger 3rdparty binaries are present and runnable.
   # @return [TrueClass, FalseClass]
@@ -217,22 +198,5 @@ class TreeTaggerModel
     end
 
     return true
-  end
-
-  ##
-  # @private
-  def model_fn(fold_id=nil)
-    if @model_fn
-      raise RuntimeError if fold_id
-      @model_fn
-    elsif @artifact and @artifact.has_folds?
-      raise RuntimeError unless fold_id
-      return "#{@artifact.basename(fold_id)}.#{TreeTaggerModel.default_model_fn_suffix}"
-    elsif @artifact
-      raise RuntimeError if fold_id
-      return "#{@artifact.basename}.#{TreeTaggerModel.default_model_fn_suffix}"
-    else
-      raise RuntimeError
-    end
   end
 end

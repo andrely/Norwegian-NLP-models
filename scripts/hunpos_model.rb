@@ -1,13 +1,11 @@
 require 'stringio'
 
 require_relative 'logger_mixin'
+require_relative 'base_model'
 require_relative 'utilities'
 require_relative 'conll_source'
-require_relative 'Utilities'
 
-class HunposModel
-
-  include Logging
+class HunposModel < BaseModel
 
   class << self
     attr_accessor :train_bin, :tag_bin, :default_model_fn_suffix
@@ -17,18 +15,6 @@ class HunposModel
   @tag_bin = '/Users/stinky/Documents/tekstlab/obt_stat/hunpos/hunpos-1.0-macosx/hunpos-tag'
 
   @default_model_fn_suffix = 'hunpos_model'
-
-  ##
-  # @option opts [Artifact] :artifact Construct model(s) from this artifact instance.
-  # @option opts [String] :model_fn Path to the stored HunPos model file.
-  def initialize(opts={})
-    @artifact = opts[:artifact] || nil
-    @model_fn = opts[:model_fn] || nil
-
-    if @artifact
-      train
-    end
-  end
 
   ##
   # @note options :train_fn and :artifact can not be specified at the same time.
@@ -54,23 +40,6 @@ class HunposModel
     end
 
     self
-  end
-
-  ##
-  # @private
-  def model_fn(fold_id=nil)
-    if @model_fn
-      raise RuntimeError if fold_id
-      @model_fn
-    elsif @artifact and @artifact.has_folds?
-      raise RuntimeError unless fold_id
-      return "#{@artifact.basename(fold_id)}.#{HunposModel.default_model_fn_suffix}"
-    elsif @artifact
-      raise RuntimeError if fold_id
-      return "#{@artifact.basename}.#{HunposModel.default_model_fn_suffix}"
-    else
-      raise RuntimeError
-    end
   end
 
   ##
@@ -253,22 +222,6 @@ class HunposModel
     end
 
     return correct_tag, total, correct_tag/total.to_f
-  end
-
-  def validate_model
-    if @model_fn
-      File.exist?(@model_fn)
-    elsif @artifact and @artifact.has_folds?
-      @artifact.fold_ids.each do |fold_id|
-        unless File.exists?(model_fn(fold_id))
-          return false
-        end
-      end
-    elsif @artifact
-      return File.exists?(model_fn)
-    else
-      false
-    end
   end
 
   ##
