@@ -37,5 +37,20 @@ class HunposModelTest < Test::Unit::TestCase
 
   def test_validate_binaries
     assert HunposModel.validate_binaries
+
+    old_train_bin = HunposModel.train_bin
+    old_tag_bin = HunposModel.tag_bin
+
+    HunposModel.tag_bin = 'knark'
+    assert !HunposModel.validate_binaries
+    HunposModel.tag_bin = 'ls'
+    assert !HunposModel.validate_binaries
+    HunposModel.tag_bin = old_tag_bin
+
+    HunposModel.train_bin = 'knark'
+    assert !HunposModel.validate_binaries
+    HunposModel.train_bin = 'ls'
+    assert !HunposModel.validate_binaries
+    HunposModel.train_bin = old_train_bin
   end
 end

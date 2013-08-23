@@ -9,10 +9,14 @@ class HunposModel
 
   include Logging
 
-  HUNPOS_TRAIN_BIN = '/Users/stinky/Documents/tekstlab/obt_stat/hunpos/hunpos-1.0-macosx/hunpos-train'
-  HUNPOS_TAG_BIN = '/Users/stinky/Documents/tekstlab/obt_stat/hunpos/hunpos-1.0-macosx/hunpos-tag'
+  class << self
+    attr_accessor :train_bin, :tag_bin, :default_model_fn_suffix
+  end
 
-  DEFAULT_MODEL_FN_SUFFIX = 'hunpos_model'
+  @train_bin = '/Users/stinky/Documents/tekstlab/obt_stat/hunpos/hunpos-1.0-macosx/hunpos-train'
+  @tag_bin = '/Users/stinky/Documents/tekstlab/obt_stat/hunpos/hunpos-1.0-macosx/hunpos-tag'
+
+  @default_model_fn_suffix = 'hunpos_model'
 
   ##
   # @option opts [Artifact] :artifact Construct model(s) from this artifact instance.
@@ -60,10 +64,10 @@ class HunposModel
       @model_fn
     elsif @artifact and @artifact.has_folds?
       raise RuntimeError unless fold_id
-      return "#{@artifact.basename(fold_id)}.#{DEFAULT_MODEL_FN_SUFFIX}"
+      return "#{@artifact.basename(fold_id)}.#{HunposModel.default_model_fn_suffix}"
     elsif @artifact
       raise RuntimeError if fold_id
-      return "#{@artifact.basename}.#{DEFAULT_MODEL_FN_SUFFIX}"
+      return "#{@artifact.basename}.#{HunposModel.default_model_fn_suffix}"
     else
       raise RuntimeError
     end
@@ -79,7 +83,7 @@ class HunposModel
   # @private
   def train_internal(train_file, model_fn)
     Logging.logger.info "Training HunPos model #{model_fn}"
-    cmd = "#{HUNPOS_TRAIN_BIN} #{model_fn}"
+    cmd = "#{HunposModel.train_bin} #{model_fn}"
     Logging.logger.info "Training with command: #{cmd}"
     Utilities.run_shell_command cmd, train_file
   end
@@ -113,7 +117,7 @@ class HunposModel
   # @private
   def predict_internal(model_fn, in_file, out_file)
     logger.info "Predicting using #{model_fn}"
-    cmd = "#{HUNPOS_TAG_BIN} #{model_fn}"
+    cmd = "#{HunposModel.tag_bin} #{model_fn}"
     logger.info "Predicting with command: #{cmd}"
     Utilities.run_shell_command(cmd, in_file, out_file)
   end
@@ -271,30 +275,31 @@ class HunposModel
   # Validates that the Hunpos 3rdparty binaries are present and runnable.
   # @return [TrueClass, FalseClass]
   def self.validate_binaries
-    unless File.exists?(HUNPOS_TAG_BIN)
-      Logging.logger.error("Could not find HunposModel tag binary #{HUNPOS_TAG_BIN}")
+    begin
+      train_out = StringIO.new
+      Utilities.run_shell_command("#{HunposModel.train_bin} -h", nil, train_out)
+      train_out = train_out.string.split("\n")
+
+      unless train_out.count > 0 and train_out[0].strip == "hunpos-train: train hunpos tagger from corpus"
+        Logging.logger.error("Could not run HunposModel train binary #{HunposModel.train_bin}")
+        return false
+      end
+    rescue Errno::ENOENT
+      Logging.logger.error("Could not find HunposModel train binary #{HunposModel.train_bin}")
       return false
     end
 
-    unless File.exists?(HUNPOS_TRAIN_BIN)
-      Logging.logger.error("Could not find HunposModel train binary #{HUNPOS_TRAIN_BIN}")
-    end
+    begin
+      tag_out = StringIO.new
+      Utilities.run_shell_command("#{HunposModel.tag_bin} -h", nil, tag_out)
+      tag_out = tag_out.string.split("\n")
 
-    train_out = StringIO.new
-    Utilities.run_shell_command("#{HUNPOS_TRAIN_BIN} -h", nil, train_out)
-    train_out = train_out.string.split("\n")
-
-    unless train_out.count > 0 and train_out[0].strip == "hunpos-train: train hunpos tagger from corpus"
-      Logging.logger.error("Could not run HunposModel train binary #{HUNPOS_TRAIN_BIN}")
-      return false
-    end
-
-    tag_out = StringIO.new
-    Utilities.run_shell_command("#{HUNPOS_TAG_BIN} -h", nil, tag_out)
-    tag_out = tag_out.string.split("\n")
-
-    unless tag_out.count > 0 and tag_out[0] == "hunpos-tag: HunPos HMM based tagger"
-      Logging.logger.error("Could not run HunposModel tag binary #{HUNPOS_TRAIN_BIN}")
+      unless tag_out.count > 0 and tag_out[0] == "hunpos-tag: HunPos HMM based tagger"
+        Logging.logger.error("Could not run HunposModel tag binary #{HunposModel.tag_bin}")
+        return false
+      end
+    rescue Errno::ENOENT
+      Logging.logger.error("Could not find HunposModel tag binary #{HunposModel.tag_bin}")
       return false
     end
 
