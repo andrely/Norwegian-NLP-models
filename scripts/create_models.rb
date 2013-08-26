@@ -1,15 +1,15 @@
 require 'date'
 require 'fileutils'
 
-require_relative 'hunpos_processor'
-require_relative 'pos_builder_processor'
-require_relative 'frequency_statistics_processor'
-require_relative 'conll_source'
-require_relative 'concatenated_source'
 require_relative 'utilities'
-require_relative 'hunpos_model'
-require_relative 'tree_tagger_processor'
-require_relative 'tree_tagger_model'
+require_relative 'sources/conll_source'
+require_relative 'sources/concatenated_source'
+require_relative 'processors/hunpos_processor'
+require_relative 'processors/pos_builder_processor'
+require_relative 'processors/frequency_statistics_processor'
+require_relative 'processors/tree_tagger_processor'
+require_relative 'models/hunpos_model'
+require_relative 'models/tree_tagger_model'
 
 BASE_PATH = "../models-#{Date.today.to_s}"
 
@@ -50,6 +50,10 @@ def create_tt_files(args)
 
     return src.pipeline_artifacts
   end
+end
+
+def create_maltparser_files(args)
+  writer = MaltparserProcessor.new(args)
 end
 
 def create_hunpos_model(artifact)
