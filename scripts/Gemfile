@@ -1,0 +1,5 @@
+source 'https://rubygems.org'
+
+gem 'test-unit', '>= 2.5'
+gem 'yard'
+gem 'Textlab-NLP', :git => 'git@github.com:andrely/Textlab-NLP.git'
