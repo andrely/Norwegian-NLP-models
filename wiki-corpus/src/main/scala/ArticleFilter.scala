@@ -50,10 +50,6 @@ class ArticleFilter(outFile : File) extends IArticleFilter{
   }
 
   def process(page: WikiArticle, siteInfo: Siteinfo) {
-    if (count >= 10) {
-      sys.exit(0)
-    }
-
     if (page != null && page.getText != null && !page.getText.startsWith("#REDIRECT ")) {
       val writer = new PrintWriter(new File(outFile, page.getId), "UTF-8")
       val rawWriter = new PrintWriter(new File(outRawDir, page.getId + ".raw"), "UTF-8")
