@@ -16,7 +16,7 @@ class BaseSource
   end
 
   def process
-    if not last_sentence_processed?
+    unless last_sentence_processed?
       sent = shift
 
       if @processor
@@ -24,29 +24,27 @@ class BaseSource
       end
 
       sent
-    else
-      if @processor
-        @processor.post_process_internal
-      end
-
-      nil
     end
   end
 
   def each
+    if @processor
+      @processor.pre_process_internal
+    end
+
     until last_sentence_processed?
       yield process
+    end
+
+    if @processor
+      @processor.post_process_internal
     end
   end
 
   def process_all
     reset
 
-    sent = process
-
-    while sent
-      sent = process
-    end
+    self.to_a
   end
 
   def reset

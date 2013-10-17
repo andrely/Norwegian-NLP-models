@@ -28,6 +28,20 @@ class BaseProcessor
     sent
   end
 
+  def pre_process
+    # default is no preprocessing
+  end
+
+  def pre_process_internal
+    pre_process
+
+    if @processor
+      @processor.pre_process_internal
+    end
+
+    nil
+  end
+
   def post_process
     # default is no postprocessing
   end

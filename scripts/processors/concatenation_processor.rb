@@ -1,33 +1,43 @@
 require_relative '../utilities'
 
 class ConcatenationProcessor
+  attr_accessor :source
+  attr_reader :processors
+
   def initialize(processor_list)
     @processors = processor_list
+    @source = nil
   end
 
   def process_internal(sent)
-    sents = @processors.collect do |proc|
+    self.processors.collect do |proc|
       if proc
         new_sent = Utilities.deep_copy sent
         proc.process_internal new_sent
       end
     end
+  end
 
-    return sents
+  def pre_process_internal
+    self.processors.each do |proc|
+      if proc
+        proc.pre_process_internal
+      end
+    end
   end
 
   def post_process_internal
-    @processors.each do |proc|
+    self.processors.each do |proc|
       if proc
         proc.post_process_internal
       end
     end
 
-    return nil
+    nil
   end
 
   def num_folds=(n)
-    @processors.each do |proc|
+    self.processors.each do |proc|
       if proc
         proc.num_folds = n
       end
@@ -35,10 +45,10 @@ class ConcatenationProcessor
   end
 
   def has_folds?
-    return false
+    false
   end
 
   def pipeline_artifacts
-    return @processors.collect { |p| p.pipeline_artifacts }.flatten
+    self.processors.collect { |p| p.pipeline_artifacts }.flatten
   end
 end
