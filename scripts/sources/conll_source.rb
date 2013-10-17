@@ -4,10 +4,10 @@ require_relative 'base_source'
 class ConllSource < BaseSource
   attr_reader :count
 
-  @@default_columns = [:id, :form, :lemma, :pos, :ppos, :feat, :head, :deprel, :u1, :u2]
+  DEFAULT_COLUMNS = [:id, :form, :lemma, :pos, :ppos, :feat, :head, :deprel, :u1, :u2]
 
   def initialize(file, opts = {})
-    @columns = opts[:columns] || @@default_columns
+    @columns = opts[:columns] || DEFAULT_COLUMNS
     @file = file
     @count = 0
     @line_no = 0
@@ -17,20 +17,14 @@ class ConllSource < BaseSource
     super(opts)
   end
 
-  def each
-    until @file.eof?
-      yield process
-    end
-  end
-
   def last_sentence_processed?
-    return @file.eof?
+    @file.eof?
   end
 
   def shift
     sent = { index: @count, words: next_sentence }
     @count += 1
-    return sent
+    sent
   end
 
   def next_sentence
@@ -98,6 +92,6 @@ class ConllSource < BaseSource
       @size = size_reader.count
     end
 
-    return @size
+    @size
   end
 end

@@ -1,11 +1,14 @@
 require_relative '../logger_mixin'
 
 class BaseProcessor
+  attr_accessor :source
+  attr_reader :processor
 
   include Logging
 
   def initialize(opts={})
-    @processor = opts[:processor] || nil
+    @processor = self.processor = opts[:processor] if opts[:processor]
+    @source = nil
     @id = opts[:id] || :unknown_processor
 
     logger.info("Initializing #{self.class.name} id: #{@id}")
@@ -22,7 +25,7 @@ class BaseProcessor
       sent = @processor.process_internal sent
     end
 
-    return sent
+    sent
   end
 
   def post_process
@@ -36,14 +39,23 @@ class BaseProcessor
       @processor.post_process_internal
     end
 
-    return nil
+    nil
   end
 
   def pipeline_artifacts
     if @processor
-      return @processor.pipeline_artifacts
+      @processor.pipeline_artifacts
     else
-      return []
+      []
     end
+  end
+
+  def size
+    @source.size if @source else nil
+  end
+
+  def processor=(processor)
+    @processor = processor
+    processor.source = self
   end
 end

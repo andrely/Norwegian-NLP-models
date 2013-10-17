@@ -2,31 +2,40 @@ require_relative '../logger_mixin'
 
 # Default behaviour for reader classes
 class BaseSource
+
   include Enumerable
   include Logging
 
+  attr_accessor :processor
+
   def initialize(opts={})
-    @processor = opts[:processor] || nil
+    self.processor = opts[:processor] if opts[:processor]
     @id = opts[:id] || :unknown_processor
 
     logger.info("Initializing #{self.class.name} id: #{@id}")
   end
 
   def process
-    unless last_sentence_processed?
+    if not last_sentence_processed?
       sent = shift
 
       if @processor
         sent = @processor.process_internal sent
       end
 
-      return sent
+      sent
     else
       if @processor
         @processor.post_process_internal
       end
 
-      return nil
+      nil
+    end
+  end
+
+  def each
+    until last_sentence_processed?
+      yield process
     end
   end
 
@@ -57,18 +66,23 @@ class BaseSource
   end
 
   def has_folds?
-    return false
+    false
   end
 
   def num_folds
-    return 1
+    1
   end
 
   def pipeline_artifacts
     if @processor
-      return @processor.pipeline_artifacts
+      @processor.pipeline_artifacts
     else
-      return []
+      []
     end
+  end
+
+  def processor=(processor)
+    @processor = processor
+    processor.source = self
   end
 end

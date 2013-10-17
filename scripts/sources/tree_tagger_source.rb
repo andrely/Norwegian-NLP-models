@@ -2,32 +2,26 @@ require_relative 'base_source'
 
 class TreeTaggerSource < BaseSource
 
-  @@default_columns = [:form, :lemma, :pos]
-  @@default_sent_pos = 'SENT'
+  DEFAULT_COLUMNS = [:form, :lemma, :pos]
+  DEFAULT_SENT_POS = 'SENT'
 
   def initialize(file, opts={})
     @file = file
-    @columns = opts[:columns] || @@default_columns
+    @columns = opts[:columns] || DEFAULT_COLUMNS
     @count = 0
-    @sent_pos = opts[:sent_pos] || @@default_sent_pos
+    @sent_pos = opts[:sent_pos] || DEFAULT_SENT_POS
 
     super(opts)
   end
 
-  def each
-    until @file.eof?
-      yield process
-    end
-  end
-
   def last_sentence_processed?
-    return @file.eof?
+    @file.eof?
   end
 
   def shift
     sent = {index: @count, words: next_sentence}
     @count += 1
-    return sent
+    sent
   end
 
   def next_sentence
@@ -69,7 +63,7 @@ class TreeTaggerSource < BaseSource
       word[key] = val
     end
 
-    return word
+    word
   end
 
   def reset
@@ -87,6 +81,6 @@ class TreeTaggerSource < BaseSource
 
     @file.pos = stored_pos
 
-    return size_reader.count
+    size_reader.count
   end
 end

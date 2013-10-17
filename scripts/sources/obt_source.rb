@@ -25,17 +25,11 @@ class OBTSource < BaseSource
 
     sent = {index: @count, words: sent}
     @count += 1
-    return sent
-  end
-
-  def each
-    until last_sentence_processed?
-      yield process
-    end
+    sent
   end
 
   def last_sentence_processed?
-    return @file.eof?
+    @file.eof?
   end
 
   def reset
@@ -57,6 +51,6 @@ class OBTSource < BaseSource
 
     @file.pos = old_pos
 
-    return count
+    count
   end
 end
