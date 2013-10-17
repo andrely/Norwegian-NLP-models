@@ -1,5 +1,4 @@
 require 'test/unit'
-require_relative '../../test/helper'
 
 require_relative '../flat_text_processor'
 require_relative '../../test/data_repository'

@@ -1,5 +1,4 @@
 require 'test/unit'
-require_relative '../../test/helper'
 
 require_relative '../concatenation_processor'
 require_relative '../null_processor'

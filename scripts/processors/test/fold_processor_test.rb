@@ -1,5 +1,4 @@
 require 'test/unit'
-require_relative '../../test/helper'
 
 require_relative '../fold_processor'
 require_relative '../../sources/array_source'

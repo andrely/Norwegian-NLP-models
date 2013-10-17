@@ -1,5 +1,4 @@
 require 'test/unit'
-require_relative 'helper'
 
 require_relative '../artifact'
 

@@ -52,7 +52,7 @@ class ConllProcessor < BaseProcessor
 
   def artifact
     if @artifact.nil?
-      @artifact = Artifact.new(base_name: @base_name, files: [:in, :in_pred], id: @id)
+      @artifact = Artifact.new(basename: @base_name, files: [:in, :in_pred], id: @id)
     end
 
     @artifact

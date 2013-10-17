@@ -1,5 +1,4 @@
 require 'test/unit'
-require_relative '../../test/helper'
 
 require 'stringio'
 
