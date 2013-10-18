@@ -7,12 +7,13 @@ require_relative '../artifact'
 class TreeTaggerProcessor < BaseProcessor
   attr_reader :num_folds
 
-  @@nn_closed_class_pos = %w(subst verb ufl adj adv fork interj symb ukjent)
+  NN_CLOSED_CLASS_POS = %w(subst verb ufl adj adv fork interj symb ukjent)
+  CHAR_FOR_SPACE = '_'
 
   # @option opts [String, NilClass] :base_name (nil) Base filename/path of the file artifacts.
   # @option opts [Artifact, NilClass] :artifact (nil) Properly initialized Artifact instance to write output to.
   # @option opts [Integer, NilClass] :num_folds (nil) Number of folds if using/creating a folded artifact.
-  # *option opts [IO, NilClass] :lemma_collision_log_file (nil) Lemma collision log file (Closed on completion).
+  # @option opts [IO, NilClass] :lemma_collision_log_file (nil) Lemma collision log file (Closed on completion).
   def initialize(opts={})
     super(opts)
 
@@ -30,15 +31,15 @@ class TreeTaggerProcessor < BaseProcessor
   end
 
   def process(sent)
-    if not @artifact
+    unless @artifact
       @artifact = create_artifact()
     end
 
-    if not @lexicon
+    unless @lexicon
       @lexicon = (1..@num_folds).collect { Hash.new }
     end
 
-    if not @open_classes
+    unless @open_classes
       @open_classes = (1..@num_folds).collect { Array.new }
     end
 
@@ -48,7 +49,7 @@ class TreeTaggerProcessor < BaseProcessor
 
     words.each_with_index do |word, i|
       form = word[:form]
-      pos = word[:pos]
+      pos = word[:pos].split(' ').join(CHAR_FOR_SPACE)
       lemma = word[:lemma]
 
       if i == len - 1 # last word, replace POS
@@ -127,7 +128,7 @@ class TreeTaggerProcessor < BaseProcessor
   end
 
   def add_to_open_classes(open_classes, word, pos)
-    if @@nn_closed_class_pos.find { |p| p == word[:pos] } and not open_classes.find { |p| p == pos }
+    if NN_CLOSED_CLASS_POS.find { |p| p == word[:pos] } and not open_classes.find { |p| p == pos }
       open_classes << pos
     end
   end
@@ -174,9 +175,9 @@ class TreeTaggerProcessor < BaseProcessor
 
   def get_fold(sent)
     if has_folds?
-      return sent[:fold]
+      sent[:fold]
     else
-      return nil
+      nil
     end
   end
 
@@ -192,14 +193,14 @@ class TreeTaggerProcessor < BaseProcessor
       @artifact = create_artifact
     end
 
-    return @artifact
+    @artifact
   end
 
   def pipeline_artifacts
     if @processor
-      return [@artifact] + @processor.pipeline_artifacts
+      [@artifact] + @processor.pipeline_artifacts
     else
-      return [@artifact]
+      [@artifact]
     end
   end
 
@@ -216,6 +217,6 @@ class TreeTaggerProcessor < BaseProcessor
   end
 
   def has_folds?
-    return @num_folds > 1
+    @num_folds > 1
   end
 end

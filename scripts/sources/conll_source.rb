@@ -2,10 +2,12 @@ require_relative '../utilities'
 require_relative 'base_source'
 
 class ConllSource < BaseSource
-  attr_reader :count
+  attr_reader :count, :file
 
   DEFAULT_COLUMNS = [:id, :form, :lemma, :pos, :ppos, :feat, :head, :deprel, :u1, :u2]
 
+  # @option opts [Array<Symbol>] columns Description of the data in each column of the file.
+  # @param [IO, StringIO] file File containing CONLL formatted corpus data.
   def initialize(file, opts = {})
     @columns = opts[:columns] || DEFAULT_COLUMNS
     @file = file
@@ -17,16 +19,19 @@ class ConllSource < BaseSource
     super(opts)
   end
 
+  # @see BaseSource
   def last_sentence_processed?
     @file.eof?
   end
 
+  # @see BaseSource
   def shift
     sent = { index: @count, words: next_sentence }
     @count += 1
     sent
   end
 
+  # @private Parses next sentence from IO like object.
   def next_sentence
     words = []
 
@@ -54,6 +59,7 @@ class ConllSource < BaseSource
     words
   end
 
+  # @private Creates word hash from CONLL formatted line.
   def parse_line(line)
     cols = line.chomp.split("\t")
 
@@ -66,9 +72,12 @@ class ConllSource < BaseSource
     @columns.zip(cols) do |key, val|
       word[key] = val
     end
+
     word
   end
 
+  # Reset the source.
+  # Subsequent iteration over sentences will start at the beginning of the stream.
   def reset
     @count = 0
     @file.rewind
@@ -93,5 +102,15 @@ class ConllSource < BaseSource
     end
 
     @size
+  end
+
+  # Close the IO object containing CONLL data.
+  def close
+    @file.close
+  end
+
+  # Is the IO object containing the data closed?
+  def closed?
+    @file.closed?
   end
 end
