@@ -1,9 +1,10 @@
 require 'tmpdir'
 require 'stringio'
 
+require 'textlabnlp/globals'
+
 require_relative 'base_model'
 require_relative '../sources/tree_tagger_source'
-require_relative '../utilities'
 
 class TreeTaggerModel < BaseModel
 
@@ -86,7 +87,7 @@ class TreeTaggerModel < BaseModel
     logger.info "Training TreeTagger model #{model_fn}"
     cmd = "#{TreeTaggerModel.train_bin} #{lex_fn} #{open_fn} #{in_fn} #{model_fn}"
     logger.info "Training with command: #{cmd}"
-    Utilities.run_shell_command(cmd)
+    TextlabNLP::run_shell_command(cmd)
 
     self
   end
