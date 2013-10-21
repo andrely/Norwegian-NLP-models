@@ -6,6 +6,7 @@ require 'textlabnlp/globals'
 require_relative 'base_model'
 require_relative '../sources/tree_tagger_source'
 
+# @deprecated Use TextlabNLP::TreeTagger instead.
 class TreeTaggerModel < BaseModel
 
   class << self
