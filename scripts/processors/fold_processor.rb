@@ -33,9 +33,11 @@ class FoldProcessor < BaseProcessor
 
     if @fold_type == :interleaved
       fold = index % @num_folds
-    else
+    elsif @fold_type == :block
       fold = index / @fold_size
       fold = @num_folds - 1 if fold >= @num_folds
+    else
+      raise ArgumentError
     end
 
 
