@@ -1,5 +1,7 @@
 require 'stringio'
 
+require 'textlabnlp/globals'
+
 require_relative 'base_model'
 require_relative '../utilities'
 require_relative '../sources/conll_source'
@@ -55,7 +57,7 @@ class HunposModel < BaseModel
     Logging.logger.info "Training HunPos model #{model_fn}"
     cmd = "#{HunposModel.train_bin} #{model_fn}"
     Logging.logger.info "Training with command: #{cmd}"
-    Utilities.run_shell_command cmd, train_file
+    TextlabNLP.run_shell_command(cmd, stdin_file: train_file)
   end
 
   ##
@@ -89,7 +91,7 @@ class HunposModel < BaseModel
     logger.info "Predicting using #{model_fn}"
     cmd = "#{HunposModel.tag_bin} #{model_fn}"
     logger.info "Predicting with command: #{cmd}"
-    Utilities.run_shell_command(cmd, in_file, out_file)
+    TextlabNLP.run_shell_command(cmd, stdin_file: in_file, stdout_file: out_file)
   end
 
   ##

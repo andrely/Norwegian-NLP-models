@@ -88,7 +88,7 @@ class TreeTaggerModel < BaseModel
     logger.info "Training TreeTagger model #{model_fn}"
     cmd = "#{TreeTaggerModel.train_bin} #{lex_fn} #{open_fn} #{in_fn} #{model_fn}"
     logger.info "Training with command: #{cmd}"
-    TextlabNLP::run_shell_command(cmd)
+    TextlabNLP.run_shell_command(cmd)
 
     self
   end
@@ -117,7 +117,7 @@ class TreeTaggerModel < BaseModel
     logger.info "Predicting using #{model_fn}"
     cmd = "#{TreeTaggerModel.predict_bin} -token -lemma #{model_fn}"
     logger.info "Predicting with command: #{cmd}"
-    Utilities.run_shell_command(cmd, in_file, out_file)
+    TextlabNLP.run_shell_command(cmd, stdin_file: in_file, stdout_file: out_file)
   end
 
   def score(opts={})
