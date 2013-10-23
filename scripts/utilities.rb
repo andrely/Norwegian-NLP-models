@@ -1,6 +1,8 @@
 require 'open3'
 require 'io/wait'
 
+require 'textlabnlp/globals'
+
 ##
 # Class holding various helper functions as class methods.
 #
@@ -31,89 +33,6 @@ class Utilities
     # simple deep copy that works for our test fixtures
     #noinspection RubyResolve
     return Marshal.load(Marshal.dump(obj))
-  end
-
-  ##
-  # Runs an external shell command.
-  #
-  # @note Stderr output is written to STDERR. Stdout output is written to STDOUT if no stdout_file
-  #   argument is given.
-  #
-  # @param cmd [String] The shell command string. Should not include pipes.
-  # @param stdin_file [IO, NilClass] IO instance to read input to the shell process from.
-  # @param stdout_file [IO, NilClass] IO instance to write shell process output to.
-  # @return [Process::Status] Shell command exit status.
-  def self.run_shell_command(cmd, stdin_file=nil, stdout_file=nil)
-    oe = ""
-    err = ""
-
-    if stdin_file
-      stdin, stdout, stderr, thr = Open3.popen3 cmd
-
-
-      # read and write stdin/stdout/stderr to avoid deadlocking on processes that blocks on writing.
-      # e.g. HunPos
-      until stdin_file.eof?
-
-        # wait until stdout is emptied until we try to write or hunpos-tag will block
-        until stdout.ready?
-          stdin.puts(stdin_file.readline)
-
-          # break completely out if there is no more inout
-          break if stdin_file.eof?
-        end
-
-        break if stdin_file.eof?
-
-        while stdout.ready?
-          if stdout_file
-            stdout_file.write(stdout.readline)
-          else
-            oe += stdout.readline
-          end
-        end
-
-        while stderr.ready?
-          err += stderr.readline
-        end
-      end
-
-      stdin.close
-
-      # get the rest of the output
-      if stdout_file
-        stdout_file.write(stdout.read)
-      else
-        oe += stdout.read
-      end
-
-      stdout.close
-
-      err += stderr.read
-      stderr.close
-
-      # wait and get get Process::Status
-      s = thr.value
-    else
-      out, err, s = Open3.capture3(cmd)
-
-      if stdout_file
-        stdout_file.write(out)
-      end
-    end
-
-    # echo errors on STDERR
-    STDERR.puts(err) if not self.external_command_silent
-
-    # echo command output
-    if stdout_file.nil?
-      puts(oe) if not self.external_command_silent
-    else
-      #noinspection RubyScope
-      puts(out) if not self.external_command_silent
-    end
-
-    return s
   end
 
   def self.get_script_path
@@ -151,6 +70,11 @@ class Utilities
     arr.inject { |acc, x| acc + x.to_f } / arr.count
   end
 
+  def self.stddev(arr)
+    mean = self.mean(arr)
+    arr.inject { |acc, x| acc + (x.to_f - mean)**2 } / arr.count
+  end
+
   ##
   # Runs the command string and returns the output if successful. Otherwise returns false
   # @param cmd [String] Shell command string
@@ -158,7 +82,7 @@ class Utilities
   def self.runnable?(cmd)
     begin
       out = StringIO.new
-      Utilities.run_shell_command(cmd, nil, out)
+      TextlabNLP.run_shell_command(cmd, stdout_file: out)
 
       return out.string
     rescue Errno::ENOENT
