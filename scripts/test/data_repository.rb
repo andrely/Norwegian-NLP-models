@@ -3,16 +3,16 @@
 require_relative '../utilities'
 
 class DataRepository
-  @@sample1 = [{index: 0,
+  SAMPLE1 = [{index: 0,
                words: [{:form => 'ba', :pos => 'subst', :feat => 'ent', :lemma => 'foo'},
                        {:form => 'gneh', :pos => 'verb', :feat => 'pres', :lemma => 'knark'},
                        {:form => '.', :pos => 'clb', :feat => '_', :lemma => '$.'}]}]
 
   def self.sample1
-    return Utilities.deep_copy @@sample1
+    Utilities.deep_copy(SAMPLE1)
   end
 
-  @@sample2 = [{index: 0,
+  SAMPLE2 = [{index: 0,
                 words: [{:form => 'ba', :pos => 'subst', :feat => 'ent', :lemma => 'foo'},
                         {:form => '.', :pos => 'clb', :feat => '_', :lemma => '$.'}]},
                {index: 1,
@@ -20,50 +20,50 @@ class DataRepository
                         {:form => '.', :pos => 'clb', :feat => '_', :lemma => '$.'}]}]
 
   def self.sample2
-    return Utilities.deep_copy @@sample2
+    Utilities.deep_copy(SAMPLE2)
   end
 
-  @@sample3 = [{index: 0, words: []},
+  SAMPLE3 = [{index: 0, words: []},
                {index: 1, words: []},
                {index: 2, words: []},
                {index: 3, words: []}]
 
   def self.sample3
-    return Utilities.deep_copy @@sample3
+    Utilities.deep_copy(SAMPLE3)
   end
 
-  @@sample3_n_folds = 3
+  SAMPLE_3_N_FOLDS = 3
 
   def self.sample3_n_folds
-    return @@sample3_n_folds
+    SAMPLE_3_N_FOLDS
   end
 
-  @@sample4 = [{index: 0,
-                words: [{form: 'Verdensarv',
-                         lemma: 'verdensarv',
-                         pos: 'subst_prop'},
-                        {form: '.',
-                         lemma: '$.',
-                         pos: '<punkt>'}]},
-               {index: 1,
-                words: [{form: 'Reise',
-                         lemma: 'reise',
-                         pos: 'subst_appell_fem_ub_ent'},
-                        {form: 'til',
-                         lemma: 'til',
-                         pos: 'prep'},
-                        {form: 'Kina',
-                         lemma: 'kina',
-                         pos: 'subst_prop'},
-                        {form: ':',
-                         lemma: '$:',
-                         pos: '<kolon>'}]}]
+  SAMPLE4 = [{index: 0,
+              words: [{form: 'Verdensarv',
+                       lemma: 'verdensarv',
+                       pos: 'subst_prop'},
+                      {form: '.',
+                       lemma: '$.',
+                       pos: '<punkt>'}]},
+             {index: 1,
+              words: [{form: 'Reise',
+                       lemma: 'reise',
+                       pos: 'subst_appell_fem_ub_ent'},
+                      {form: 'til',
+                       lemma: 'til',
+                       pos: 'prep'},
+                      {form: 'Kina',
+                       lemma: 'kina',
+                       pos: 'subst_prop'},
+                      {form: ':',
+                       lemma: '$:',
+                       pos: '<kolon>'}]}]
 
   def self.sample4
-    return @@sample4
+    Utilities.deep_copy(SAMPLE4)
   end
 
-  @@sample_conll_1 = <<END
+  SAMPLE_CONLL_1 = <<END
 1	Nokre	nokon	det	det	kvant|fl	2	DET	_	_
 2	refleksjonar	refleksjon	subst	subst	mask|appell|ub|fl	0	FRAG	_	_
 3	på	på	prep	prep	_	2	ATR	_	_
@@ -84,34 +84,44 @@ class DataRepository
 END
 
   def self.sample_conll_1
-    return @@sample_conll_1
+    Utilities.deep_copy(SAMPLE_CONLL_1)
   end
+
+  SAMPLE_CONLL_1_SENT_SIZES = [12, 4]
 
   def self.sample_conll_1_sent_sizes
-    return @@sample_conll_sent_sizes
+    SAMPLE_CONLL_1_SENT_SIZES
   end
 
-  @@sample_conll_2 = <<END
+  SAMPLE_CONLL_2 = <<END
 Verdensarv	verdensarv	subst_prop
 .	$.	<punkt>
 
 END
 
   def self.sample_conll_2
-    return @@sample_conll_2
+    Utilities.deep_copy(SAMPLE_CONLL_2)
   end
 
-  @@sample_conll_sent_sizes = [12, 4]
-
-  @@sample5 = [{ index: 0,
-                 words: [{ form: 'ba', pos: 'foo', lemma: 'lemma1' },
-                         { form: 'ba', pos: 'foo', lemma: 'lemma2' },
-                         { form: '.', pos: '.', lemma: '$.' }]}]
+  SAMPLE5 = [{ index: 0,
+               words: [{ form: 'ba', pos: 'foo', lemma: 'lemma1' },
+                       { form: 'ba', pos: 'foo', lemma: 'lemma2' },
+                       { form: '.', pos: '.', lemma: '$.' }]}]
   def self.sample5
-    return @@sample5
+    Utilities.deep_copy(SAMPLE5)
   end
 
   def self.sample_10_empty_sent
     10.times.collect { |i| { index: i }}
+  end
+
+  SAMPLE6 = [{index: 0,
+              words: [{ form: '«', pos: 'anf', lemma: '«' },
+                      { form: 'ba', pos: 'foo', lemma: '*ba'},
+                      { form: 'ba', pos: 'foo', lemma: 'ba'},
+                      { form: '»', pos: 'anf', lemma: '»' }]}]
+
+  def self.sample6
+    Utilities.deep_copy(SAMPLE6)
   end
 end

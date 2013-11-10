@@ -6,10 +6,10 @@ require_relative '../pos_builder_processor'
 require_relative '../../sources/conll_source'
 require_relative '../../test/data_repository'
 
-class POSBuilderProcessorTest < Test::Unit::TestCase
+class PosBuilderProcessorTest < Test::Unit::TestCase
   def test_pos_builder_processor
     src = ConllSource.new(StringIO.new(DataRepository.sample_conll_1),
-                          processor: POSBuilderProcessor.new)
+                          processor: PosBuilderProcessor.ob_pos_builder)
 
     result = src.to_a
 
@@ -56,5 +56,43 @@ class POSBuilderProcessorTest < Test::Unit::TestCase
     assert_equal [], words[2][:feat]
     assert_equal 'subst_appell', words[3][:pos]
     assert_equal ['eint', 'mask', 'ub'], words[3][:feat]
+  end
+
+  def test_extract_pos
+    builder = PosBuilderProcessor.ob_pos_builder()
+
+    pos, feat = builder.extract_pos(['ba', 'foo', 'knark'])
+    assert_equal('ba', pos)
+    assert_equal(['foo', 'knark'], feat)
+
+    pos, feat = builder.extract_pos(['subst', 'mask', 'appell', 'ent', 'ub'])
+    assert_equal('subst_appell', pos)
+    assert_equal(['ent', 'mask', 'ub'], feat)
+
+    pos, feat = builder.extract_pos(['subst', 'mask', 'ent', 'ub'])
+    assert_equal('subst', pos)
+    assert_equal(['ent', 'mask', 'ub'], feat)
+
+    pos, feat = builder.extract_pos([])
+    assert_equal('', pos)
+    assert_equal([], feat)
+
+    builder = PosBuilderProcessor.new
+
+    pos, feat = builder.extract_pos(['ba', 'foo', 'knark'])
+    assert_equal('ba', pos)
+    assert_equal(['foo', 'knark'], feat)
+
+    pos, feat = builder.extract_pos(['subst', 'mask', 'appell', 'ent', 'ub'])
+    assert_equal('subst', pos)
+    assert_equal(['appell', 'ent', 'mask', 'ub'], feat)
+
+    pos, feat = builder.extract_pos(['subst', 'mask', 'ent', 'ub'])
+    assert_equal('subst', pos)
+    assert_equal(['ent', 'mask', 'ub'], feat)
+
+    pos, feat = builder.extract_pos([])
+    assert_equal('', pos)
+    assert_equal([], feat)
   end
 end

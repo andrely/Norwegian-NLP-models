@@ -16,7 +16,7 @@ class TreeTaggerModel < BaseModel
   @train_bin = '/Users/stinky/Work/tools/treetagger/bin/train-tree-tagger'
   @predict_bin = '/Users/stinky/Work/tools/treetagger/bin/tree-tagger'
 
-  @default_model_fn_suffix = "tt_model"
+  @default_model_fn_suffix = "tree_tagger_model"
 
   def train(opts={})
     train_fn = opts[:train_fn] || nil
@@ -34,6 +34,8 @@ class TreeTaggerModel < BaseModel
       train_with_artifact(artifact)
     elsif @artifact
       train_with_artifact(@artifact)
+    else
+      raise ArgumentError
     end
   end
 
@@ -107,9 +109,10 @@ class TreeTaggerModel < BaseModel
 
     logger.info "Predicting #{in_fn} to #{out_fn}"
 
-    Utilities.multiple_file_open([in_fn, out_fn], 'w') do |files|
-      in_file, out_file = files
-      predict_internal(model_fn, in_file, out_file)
+    File.open(in_fn, 'r') do |in_file|
+      File.open(out_fn, 'w') do |out_file|
+        predict_internal(model_fn, in_file, out_file)
+      end
     end
   end
 
@@ -136,7 +139,7 @@ class TreeTaggerModel < BaseModel
       pred_file, true_file = files
 
       pred_src = TreeTaggerSource.new pred_file, columns: [:form, :pos, :lemma]
-      true_src = TreeTaggerSource.new true_file
+      true_src = TreeTaggerSource.new true_file, columns: [:form, :pos, :lemma]
 
       pred_words = pred_src.to_a.collect { |s| s[:words] }.flatten
       true_words = true_src.to_a.collect { |s| s[:words] }.flatten
@@ -162,7 +165,7 @@ class TreeTaggerModel < BaseModel
       end
     end
 
-    return [correct_lemma, total, correct_lemma/total.to_f], [correct_tag, total, correct_tag/total.to_f]
+    return correct_tag, total, correct_tag/total.to_f
   end
 
   ##
