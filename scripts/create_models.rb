@@ -3,6 +3,8 @@ require 'fileutils'
 require 'optparse'
 require 'logger'
 
+require 'textlabnlp/globals'
+
 require_relative 'utilities'
 require_relative 'sources/conll_source'
 require_relative 'sources/concatenated_source'
@@ -14,6 +16,7 @@ require_relative 'processors/conll_processor'
 require_relative 'processors/normalization_processor'
 require_relative 'processors/fold_processor'
 require_relative 'processors/concatenation_processor'
+require_relative 'processors/pos_processor'
 require_relative 'models/hunpos_model'
 require_relative 'models/tree_tagger_model'
 require_relative 'models/maltparser_model'
@@ -63,7 +66,11 @@ def evaluate_model(artifact, model_class, report_fn)
   end
 end
 
-def create_files(path, models, corpus_files, folds=nil)
+def create_files(path, models, corpus_files, opts={})
+  folds = opts[:folds] || nil
+  expand_tags = opts[:expand_tags] || nil
+  lexicalize = opts[:lexicalize] || nil
+
   FileUtils.mkpath(path) unless File.exists?(path)
   writers = []
 
@@ -78,15 +85,21 @@ def create_files(path, models, corpus_files, folds=nil)
   end
 
   writers_proc = ConcatenationProcessor.new(writers)
-  stats = FrequencyStatisticsProcessor.new(processor: writers_proc)
-  norm = NormalizationProcessor.ob_normalization_processor(processor: stats)
-  pos = PosBuilderProcessor.new(processor: norm)
+  stats = FrequencyStatisticsProcessor.new(processor: writers_proc,
+                                           base_name: File.join(path, "corpus_freq"))
+  prev_proc = NormalizationProcessor.ob_normalization_processor(processor: stats)
+
+  if lexicalize
+    prev_proc = PosProcessor.ob_lexicalization_processor(processor: prev_proc)
+  end
+
+  prev_proc = PosBuilderProcessor.ob_pos_builder(processor: prev_proc, expand_tags: expand_tags)
 
   sources = []
 
   corpus_files.each do |fn|
     f = File.open(fn, 'r')
-    fn_id = "file_src_#{fn}".to_sym
+    fn_id = "file_src_#{File.basename(fn)}".to_sym
 
     proc = case File.extname(fn)
              when '.vrt'
@@ -100,7 +113,7 @@ def create_files(path, models, corpus_files, folds=nil)
     sources << proc
   end
 
-  src = ConcatenatedSource.new(sources, processor: pos)
+  src = ConcatenatedSource.new(sources, processor: prev_proc)
 
   src.process_all
 
@@ -160,6 +173,14 @@ if __FILE__ == $0
             "Write all training/evaluation data and models to DIR (default is current directory).") do |dir|
       options[:out_dir] = dir
     end
+
+    opts.on("-l", "--lexicalize", "Lexicalize tags.") do
+      options[:lexicalize] = true
+    end
+
+    opts.on("-x", "--expand-base-tags", "Use full form base tags.") do
+      options[:expand_tags] = true
+    end
   end
 
   parser.parse!
@@ -172,9 +193,13 @@ if __FILE__ == $0
   corpus_files.each { |fn| logger.info("Training with #{fn}") }
   logger.info("Writing data and models to #{options[:out_dir]}")
   logger.info("Evaluating with #{options[:num_folds]} folds") if options[:evaluate]
+  logger.info("Lexicalizing POS tags") if options[:lexicalize]
+  logger.info("Expanding POS tags") if options[:expand_tags]
 
   folds = options[:num_folds] if options[:evaluate]
-  artifacts = create_files(options[:out_dir], options[:models], corpus_files, folds)
+  artifacts = create_files(options[:out_dir], options[:models], corpus_files,
+                           folds: folds, expand_tags: options[:expand_tags],
+                           lexicalize: options[:lexicalize])
 
   if options[:models].member?(:hunpos)
     create_hunpos_model(artifacts.find { |artifact| artifact.id == :hunpos_writer })

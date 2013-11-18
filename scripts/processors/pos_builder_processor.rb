@@ -43,7 +43,10 @@ class PosBuilderProcessor < BaseProcessor
   #
   # @return [PosBuilderProcessor]
   def self.ob_pos_builder(opts={})
-    opts[:pos_list] = OB_BASE_POS
+    if opts[:expand_tags]
+      opts[:pos_list] = OB_BASE_POS
+    end
+
     opts[:sep] = OB_SEP
     opts[:part_filter] = OB_PART_FILTER
 

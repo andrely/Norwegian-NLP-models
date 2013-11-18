@@ -9,7 +9,7 @@ require_relative '../../test/data_repository'
 class PosBuilderProcessorTest < Test::Unit::TestCase
   def test_pos_builder_processor
     src = ConllSource.new(StringIO.new(DataRepository.sample_conll_1),
-                          processor: PosBuilderProcessor.ob_pos_builder)
+                          processor: PosBuilderProcessor.ob_pos_builder(expand_tags: true))
 
     result = src.to_a
 
@@ -59,7 +59,7 @@ class PosBuilderProcessorTest < Test::Unit::TestCase
   end
 
   def test_extract_pos
-    builder = PosBuilderProcessor.ob_pos_builder()
+    builder = PosBuilderProcessor.ob_pos_builder(expand_tags: true)
 
     pos, feat = builder.extract_pos(['ba', 'foo', 'knark'])
     assert_equal('ba', pos)
